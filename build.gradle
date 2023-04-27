@@ -69,6 +69,7 @@ android {
                     arguments '-DPPX_BUILD_XR=FALSE',
                               '-DPPX_XR_QUEST=FALSE',
                               '-DBUILD_LOADER=FALSE'
+                    targets 'vk_01_triangle'
                 }
             }
         }
@@ -83,6 +84,7 @@ android {
                               '-DBUILD_LOADER=TRUE',
                               '-DBUILD_ALL_EXTENSIONS=TRUE'
                     cppFlags '-DXR_USE_PLATFORM_ANDROID'
+                    targets 'vk_01_triangle'
                 }
             }
         }
@@ -101,6 +103,7 @@ android {
                             '-DBUILD_ALL_EXTENSIONS=FALSE',
                             "-DOCULUS_OPENXR_SDK=${oculusOpenxrSdkLocation}"
                   cppFlags '-DXR_USE_PLATFORM_ANDROID'
+                  targets 'vk_01_triangle'
                 }
             }
         }
