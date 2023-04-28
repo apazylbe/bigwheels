@@ -1,4 +1,4 @@
-name: CI checks
+name: Android build
 
 on:
   pull_request:
