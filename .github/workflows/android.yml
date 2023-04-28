@@ -32,4 +32,3 @@ jobs:
       - name: Build Cube sample for Android
         run: |
           ./gradlew assembleMobile
-          ./gradlew assembleOpenxr
