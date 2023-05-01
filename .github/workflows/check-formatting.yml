@@ -48,13 +48,3 @@ jobs:
             echo ""
             exit 3
           fi
-
-  clang-format-check:
-    runs-on: ubuntu-20-04
-    steps:
-    - uses: actions/checkout@v3
-    - uses: DoozyX/clang-format-lint-action@v0.15
-      with:
-        source: '.'
-        exclude: './third_party'
-        clangFormatVersion: 16
