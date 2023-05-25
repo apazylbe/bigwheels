@@ -1,0 +1,48 @@
+apply plugin: 'com.android.application'
+apply from: '../../gradle/common.gradle'
+
+android {
+    defaultConfig {
+        applicationId "com.google.bigwheels.project_16_gbuffer"
+        minSdk rootProject.ext.minSdk
+        targetSdk rootProject.ext.targetSdk
+        versionCode 1
+        versionName "1.0"
+
+        manifestPlaceholders = [
+            sampleLibraryName : "vk_16_gbuffer",
+            appLabel : "vk_16_gbuffer"
+        ]
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        externalNativeBuild {
+            cmake {
+                arguments '-DPPX_ANDROID=TRUE',
+                          '-DPPX_BUILD_TESTS=FALSE',
+                          '-DBUILD_TESTS=FALSE', // Required for OpenXR
+                          '-DPPX_BUILD_XR=FALSE',
+                          '-DBUILD_LOADER=FALSE'
+                cppFlags '-std=c++20'
+                if (project.hasProperty('DXC_PATH')) {
+                  arguments "-DDXC_PATH=$DXC_PATH"
+                }
+                targets "vk_16_gbuffer"
+            }
+        }
+        multiDexEnabled true
+        it.buildConfigField "String", "sample_library_name", '"vk_16_gbuffer"'
+        sourceSets.main {
+            manifest.srcFile '../../src/android/AndroidManifest.xml'
+        }
+    }
+}
+
+// Project specific assets, basic shaders are copied separately.
+task copyTask {
+	copy {
+		from rootProject.ext.assetsPath + '/materials/textures'
+		into 'assets/materials/textures'
+	}
+}
+
+preBuild.dependsOn copyTask

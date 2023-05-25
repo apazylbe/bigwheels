@@ -14,3 +14,11 @@ dependencyResolutionManagement {
 }
 rootProject.name = "bigwheels"
 include ':app'
+
+file('projects').eachDir { sub ->
+    if (file("projects/$sub.name/build.gradle").exists()) {
+        println("Adding project $sub.name")
+        include ":$sub.name"
+        project(":$sub.name").projectDir = new File("projects/$sub.name")
+    }
+}
