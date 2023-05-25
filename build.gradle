@@ -142,3 +142,12 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.1.4'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.0'
 }
+
+ext {
+    minSdk = 29
+    targetSdk = 32
+    compileSdk = 32
+    assetPath = '../../assets'
+    thirdPartyAssets = '../../third_party/assets'
+    path = '.'
+}

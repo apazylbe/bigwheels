@@ -1,0 +1,51 @@
+apply plugin: 'com.android.application'
+apply from: '../../gradle/common.gradle'
+
+def sample_name = '15_basic_material'
+def library_name = 'vk_' + sample_name
+
+android {
+    defaultConfig {
+        applicationId "com.google.bigwheels.project_" + sample_name
+        minSdk rootProject.ext.minSdk
+        targetSdk rootProject.ext.targetSdk
+        versionCode 1
+        versionName "1.0"
+
+        manifestPlaceholders = [
+            sampleLibraryName : library_name,
+            appLabel : library_name
+        ]
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        externalNativeBuild {
+            cmake {
+                arguments '-DPPX_ANDROID=TRUE',
+                          '-DPPX_BUILD_TESTS=FALSE',
+                          '-DBUILD_TESTS=FALSE' // Required for OpenXR
+                cppFlags '-std=c++20'
+                if (project.hasProperty('DXC_PATH')) {
+                  arguments "-DDXC_PATH=$DXC_PATH"
+                }
+                targets library_name
+            }
+        }
+        multiDexEnabled true
+        it.buildConfigField "String", "sample_library_name", '"vk_15_basic_material"'
+    }
+}
+
+task copyTask {
+	copy {
+		from rootProject.ext.assetPath + '/basic/shaders/spv'
+		into 'assets/basic/shaders/spv'
+		include '*.spv'
+	}
+    copy {
+        from rootProject.ext.assetPath + '/gbuffer/shaders/spv'
+        into 'assets/gbuffer/shaders/spv'
+        include '*.spv'
+    }
+}
+
+preBuild.dependsOn copyTask

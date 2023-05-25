@@ -28,7 +28,6 @@
 #include "ppx/grfx/vk/vk_sync.h"
 
 #define VMA_IMPLEMENTATION
-#define VMA_VULKAN_VERSION 1002000 // Vulkan 1.2
 #include "vk_mem_alloc.h"
 #include <unordered_set>
 
@@ -128,8 +127,8 @@ Result Device::ConfigureExtensions(const grfx::DeviceCreateInfo* pCreateInfo)
     if (GetInstance()->IsSwapchainEnabled()) {
         mExtensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
     }
-
-    mExtensions.push_back(VK_EXT_SCALAR_BLOCK_LAYOUT_EXTENSION_NAME);
+    // Not available on my emulator
+    //mExtensions.push_back(VK_EXT_SCALAR_BLOCK_LAYOUT_EXTENSION_NAME);
 
     // Add Vulkan 1.1 extensions:
     //   - VK_EXT_descriptor_indexing (promoted to core in 1.2)
@@ -137,7 +136,7 @@ Result Device::ConfigureExtensions(const grfx::DeviceCreateInfo* pCreateInfo)
     //
     if (GetInstance()->GetApi() == grfx::API_VK_1_1) {
         // VK_EXT_host_query_reset
-        mExtensions.push_back(VK_EXT_HOST_QUERY_RESET_EXTENSION_NAME);
+        //mExtensions.push_back(VK_EXT_HOST_QUERY_RESET_EXTENSION_NAME);
 
         // Descriptor indexing
         //
@@ -386,8 +385,8 @@ Result Device::CreateApiObjects(const grfx::DeviceCreateInfo* pCreateInfo)
     //   - Enable timeline semaphore if extension was loaded
     //
     if (GetInstance()->GetApi() == grfx::API_VK_1_1) {
-        mFnResetQueryPoolEXT = (PFN_vkResetQueryPoolEXT)vkGetDeviceProcAddr(mDevice, "vkResetQueryPoolEXT");
-        PPX_ASSERT_MSG(mFnResetQueryPoolEXT != nullptr, "failed to load vkResetQueryPoolEXT");
+        //mFnResetQueryPoolEXT = (PFN_vkResetQueryPoolEXT)vkGetDeviceProcAddr(mDevice, "vkResetQueryPoolEXT");
+        //PPX_ASSERT_MSG(mFnResetQueryPoolEXT != nullptr, "failed to load vkResetQueryPoolEXT");
 
         mHasTimelineSemaphore = ElementExists(std::string(VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME), mExtensions);
     }
@@ -698,7 +697,7 @@ void Device::ResetQueryPoolEXT(
     uint32_t    firstQuery,
     uint32_t    queryCount) const
 {
-    mFnResetQueryPoolEXT(mDevice, queryPool, firstQuery, queryCount);
+    //mFnResetQueryPoolEXT(mDevice, queryPool, firstQuery, queryCount);
 }
 
 } // namespace vk
