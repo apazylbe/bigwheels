@@ -1,5 +1,3 @@
-
-
 android {
 	namespace 'com.google.bigwheels'
     compileSdk rootProject.ext.compileSdk
@@ -36,7 +34,6 @@ android {
 
     sourceSets {
         main {
-            manifest.srcFile '../../src/android/AndroidManifest.xml'
             java.srcDirs = [ '../../src/android' ]
             assets {
                 srcDirs 'assets'
@@ -44,6 +41,21 @@ android {
         }
     }
 }
+
+task copyShadersTask {
+    copy {
+        from rootProject.ext.assetPath + '/basic/shaders/spv'
+        into 'assets/basic/shaders/spv'
+        include '*.spv'
+    }
+    copy {
+        from rootProject.ext.assetPath + '/gbuffer/shaders/spv'
+        into 'assets/gbuffer/shaders/spv'
+        include '*.spv'
+    }
+}
+
+preBuild.dependsOn copyShadersTask
 
 dependencies {
     implementation 'androidx.appcompat:appcompat:1.5.1'

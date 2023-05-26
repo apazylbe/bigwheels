@@ -3,15 +3,15 @@ apply from: '../../gradle/common.gradle'
 
 android {
     defaultConfig {
-        applicationId "com.google.bigwheels.project_16_gbuffer"
+        applicationId "com.google.bigwheels.project_04_cube_xr"
         minSdk rootProject.ext.minSdk
         targetSdk rootProject.ext.targetSdk
         versionCode 1
         versionName "1.0"
 
         manifestPlaceholders = [
-            sampleLibraryName : "vk_16_gbuffer",
-            appLabel : "vk_16_gbuffer"
+            sampleLibraryName : "vk_04_cube_xr",
+            appLabel : "vk_04_cube_xr"
         ]
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -20,30 +20,21 @@ android {
                 arguments '-DPPX_ANDROID=TRUE',
                           '-DPPX_BUILD_TESTS=FALSE',
                           '-DBUILD_TESTS=FALSE', // Required for OpenXR
-                          '-DPPX_BUILD_XR=FALSE',
-                          '-DBUILD_LOADER=FALSE'
-                cppFlags '-std=c++20'
+                          '-DPPX_BUILD_XR=TRUE',
+                          '-DBUILD_LOADER=TRUE',
+                          '-DBUILD_ALL_EXTENSIONS=TRUE'
+                cppFlags '-std=c++20',
+                         '-DXR_USE_PLATFORM_ANDROID'
                 if (project.hasProperty('DXC_PATH')) {
                   arguments "-DDXC_PATH=$DXC_PATH"
                 }
-                targets "vk_16_gbuffer"
+                targets "vk_04_cube_xr"
             }
         }
         multiDexEnabled true
-        it.buildConfigField "String", "sample_library_name", '"vk_16_gbuffer"'
+        it.buildConfigField "String", "sample_library_name", '"vk_04_cube_xr"'
         sourceSets.main {
-            manifest.srcFile '../../src/android/AndroidManifest.xml'
+            manifest.srcFile '../../src/android/AndroidManifest.XR.xml'
         }
     }
 }
-
-// Project specific assets, basic shaders are copied separately.
-task copyTask {
-	copy {
-		from rootProject.ext.assetPath + '/materials/textures'
-		into 'assets/materials/textures'
-	}
-}
-
-preBuild.dependsOn copyShadersTask
-preBuild.dependsOn copyTask
