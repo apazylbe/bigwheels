@@ -1,7 +1,7 @@
 apply plugin: 'com.android.application'
 apply from: '../../gradle/common.gradle'
 
-def sample_name = '15_basic_material'
+def sample_name = 'fishtornado'
 def library_name = 'vk_' + sample_name
 
 android {
@@ -31,7 +31,7 @@ android {
             }
         }
         multiDexEnabled true
-        it.buildConfigField "String", "sample_library_name", '"vk_15_basic_material"'
+        it.buildConfigField "String", "sample_library_name", '"vk_fishtornado"'
         sourceSets.main {
             manifest.srcFile '../../src/android/AndroidManifest.xml'
         }
@@ -45,17 +45,8 @@ task copyTask {
 		include '*.spv'
 	}
     copy {
-        from rootProject.ext.assetsPath + '/gbuffer/shaders/spv'
-        into 'assets/gbuffer/shaders/spv'
-        include '*.spv'
-    }
-    copy {
-        from rootProject.ext.assetsPath + '/common/textures'
-        into 'assets/common/textures'
-    }
-    copy {
-        from rootProject.ext.thirdPartyAssetsPath + '/poly_haven'
-        into 'assets/poly_haven'
+        from rootProject.ext.assetsPath + '/fishtornado'
+        into 'assets/fishtornado'
     }
 }
 

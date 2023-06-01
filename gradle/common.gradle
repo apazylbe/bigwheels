@@ -1,8 +1,9 @@
-android {
-	namespace 'com.google.bigwheels'
-    compileSdk rootProject.ext.compileSdk
 
-	applicationVariants.all { variant ->
+android {
+    namespace 'com.google.bigwheels'
+    compileSdkVersion rootProject.ext.compileSdkVersion
+
+    applicationVariants.all { variant ->
         variant.outputs.all {
             outputFileName = "../../../../../../bin/" + outputFileName
         }
@@ -41,21 +42,6 @@ android {
         }
     }
 }
-
-task copyShadersTask {
-    copy {
-        from rootProject.ext.assetPath + '/basic/shaders/spv'
-        into 'assets/basic/shaders/spv'
-        include '*.spv'
-    }
-    copy {
-        from rootProject.ext.assetPath + '/gbuffer/shaders/spv'
-        into 'assets/gbuffer/shaders/spv'
-        include '*.spv'
-    }
-}
-
-preBuild.dependsOn copyShadersTask
 
 dependencies {
     implementation 'androidx.appcompat:appcompat:1.5.1'

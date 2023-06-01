@@ -40,10 +40,9 @@ android {
 // Project specific assets, basic shaders are copied separately.
 task copyTask {
 	copy {
-		from rootProject.ext.assetPath + '/materials/textures'
+		from rootProject.ext.assetsPath + '/materials/textures'
 		into 'assets/materials/textures'
 	}
 }
 
-preBuild.dependsOn copyShadersTask
 preBuild.dependsOn copyTask
