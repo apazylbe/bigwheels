@@ -29,6 +29,6 @@ jobs:
           mkdir "${HOME}/vulkan-sdk"
           tar -xf vulkansdk-linux-x86_64-1.3.216.0.tar.gz -C "${HOME}/vulkan-sdk"
           echo "VULKAN_SDK=${HOME}/vulkan-sdk/1.3.216.0/x86_64" >> $GITHUB_ENV
-      - name: Build Cube sample for Android
+      - name: Build all projects
         run: |
           ./gradlew assemble
