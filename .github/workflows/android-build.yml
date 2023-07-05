@@ -38,3 +38,12 @@ jobs:
           df . -H
           ./gradlew buildRelease
           df . -H
+  experiment:
+    name: "Just an experiment"
+    runs-on: "ubuntu-20.04"
+    strategy:
+      fail-fast: true
+    steps:
+      - name: Experiment
+        run: |
+          df . -H
