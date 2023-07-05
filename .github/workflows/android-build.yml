@@ -16,8 +16,6 @@ jobs:
     runs-on: "ubuntu-20.04"
     strategy:
       fail-fast: true
-      matrix:
-        task: ["assembleMobileBasicMaterial", "assembleMobileCube", "assembleMobileFishtornado", "assembleMobileGbuffer", "assembleMobileTriangle" ]
     steps:
       - name: Checkout the code
         uses: actions/checkout@v3
@@ -37,4 +35,8 @@ jobs:
           echo "VULKAN_SDK=${HOME}/vulkan-sdk/1.3.216.0/x86_64" >> $GITHUB_ENV
       - name: Build the sample for Android
         run: |
-          ./gradlew ${{ matrix.task }}
+          df . -H
+          ./gradlew assembleMobile
+          df . -H
+          ./gradlew assembleXr
+          df . -H
