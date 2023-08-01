@@ -243,6 +243,16 @@ void CommandBuffer::EndRenderPassImpl()
     // Nothing to do here for now
 }
 
+void CommandBuffer::BeginRenderingImpl(const grfx::RenderingInfo* pRenderingInfo)
+{
+    mCommandList->BeginRenderPass(1, &renderTargetDesc, &dsDesc, D3D12_RENDER_PASS_FLAG_NONE);
+}
+
+void CommandBuffer::EndRendering()
+{
+    mCommandList->EndRenderPass();
+}
+
 void CommandBuffer::PushDescriptorImpl(
     grfx::CommandType              pipelineBindPoint,
     const grfx::PipelineInterface* pInterface,

@@ -110,6 +110,8 @@ private:
 };
 
 extern PFN_vkCmdPushDescriptorSetKHR CmdPushDescriptorSetKHR;
+extern PFN_vkCmdBeginRenderingKHR    CmdBeginRenderingKHR;
+extern PFN_vkCmdEndRenderingKHR      CmdEndRenderingKHR;
 
 } // namespace vk
 } // namespace grfx

@@ -158,6 +158,7 @@ struct OutputState
 //!
 struct GraphicsPipelineCreateInfo
 {
+    bool                           dynamicRenderPass  = false;
     grfx::ShaderStageInfo          VS                 = {};
     grfx::ShaderStageInfo          HS                 = {};
     grfx::ShaderStageInfo          DS                 = {};
@@ -176,6 +177,7 @@ struct GraphicsPipelineCreateInfo
 
 struct GraphicsPipelineCreateInfo2
 {
+    bool                           dynamicRenderPass                  = false;
     grfx::ShaderStageInfo          VS                                 = {};
     grfx::ShaderStageInfo          PS                                 = {};
     grfx::VertexInputState         vertexInputState                   = {};

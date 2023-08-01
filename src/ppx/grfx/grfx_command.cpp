@@ -58,6 +58,17 @@ void CommandBuffer::EndRenderPass()
     mCurrentRenderPass = nullptr;
 }
 
+void CommandBuffer::BeginRendering(const grfx::RenderingInfo* pRenderingInfo)
+{
+    PPX_ASSERT_NULL_ARG(pRenderingInfo);
+    BeginRenderingImpl(pRenderingInfo);
+}
+
+void CommandBuffer::EndRendering()
+{
+    EndRenderingImpl();
+}
+
 void CommandBuffer::BeginRenderPass(const grfx::RenderPass* pRenderPass)
 {
     PPX_ASSERT_NULL_ARG(pRenderPass);

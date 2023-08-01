@@ -37,6 +37,8 @@ namespace grfx {
 namespace vk {
 
 PFN_vkCmdPushDescriptorSetKHR CmdPushDescriptorSetKHR = nullptr;
+PFN_vkCmdBeginRenderingKHR    CmdBeginRenderingKHR    = nullptr;
+PFN_vkCmdEndRenderingKHR      CmdEndRenderingKHR      = nullptr;
 
 Result Device::ConfigureQueueInfo(const grfx::DeviceCreateInfo* pCreateInfo, std::vector<float>& queuePriorities, std::vector<VkDeviceQueueCreateInfo>& queueCreateInfos)
 {
@@ -422,6 +424,15 @@ Result Device::CreateApiObjects(const grfx::DeviceCreateInfo* pCreateInfo)
         PPX_LOG_INFO("Vulkan maxPushDescriptors: " << mMaxPushDescriptors);
 
         CmdPushDescriptorSetKHR = (PFN_vkCmdPushDescriptorSetKHR)vkGetDeviceProcAddr(mDevice, "vkCmdPushDescriptorSetKHR");
+    }
+
+    if (ElementExists(std::string(VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME), mExtensions)) {
+        CmdBeginRenderingKHR = (PFN_vkCmdBeginRenderingKHR)vkGetDeviceProcAddr(mDevice, "vkCmdBeginRenderingKHR");
+        CmdEndRenderingKHR   = (PFN_vkCmdEndRenderingKHR)vkGetDeviceProcAddr(mDevice, "vkCmdEndRenderingKHR");
+        PPX_LOG_INFO("Turned on Dynamic rendering");
+    }
+    else {
+        PPX_LOG_ERROR("Dynamic rendering is not available");
     }
 
     // VMA

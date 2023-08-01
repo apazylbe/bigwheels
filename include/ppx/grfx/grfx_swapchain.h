@@ -130,11 +130,17 @@ public:
     Result GetColorImage(uint32_t imageIndex, grfx::Image** ppImage) const;
     Result GetDepthImage(uint32_t imageIndex, grfx::Image** ppImage) const;
     Result GetRenderPass(uint32_t imageIndex, grfx::AttachmentLoadOp loadOp, grfx::RenderPass** ppRenderPass) const;
+    Result GetClearRenderTargetView(uint32_t index, grfx::RenderTargetView** ppView) const;
+    Result GetLoadRenderTargetView(uint32_t index, grfx::RenderTargetView** ppView) const;
+    Result GetDepthStencilView(uint32_t index, grfx::DepthStencilView** ppView) const;
 
     // Convenience functions - returns empty object if index is invalid
     grfx::ImagePtr      GetColorImage(uint32_t imageIndex) const;
     grfx::ImagePtr      GetDepthImage(uint32_t imageIndex) const;
     grfx::RenderPassPtr GetRenderPass(uint32_t imageIndex, grfx::AttachmentLoadOp loadOp = grfx::ATTACHMENT_LOAD_OP_CLEAR) const;
+    grfx::RenderTargetViewPtr GetClearRenderTargetView(uint32_t index) const;
+    grfx::RenderTargetViewPtr GetLoadRenderTargetView(uint32_t index) const;
+    grfx::DepthStencilViewPtr GetDepthStencilView(uint32_t index) const;
 
     Result AcquireNextImage(
         uint64_t         timeout,    // Nanoseconds
@@ -178,6 +184,8 @@ protected:
     void   DestroyDepthImages();
     Result CreateRenderPasses();
     void   DestroyRenderPasses();
+    Result CreateRenderTargets();
+    void   DestroyRenderTargets();
 
 private:
     virtual Result AcquireNextImageInternal(
@@ -208,6 +216,9 @@ protected:
     grfx::QueuePtr                   mQueue;
     std::vector<grfx::ImagePtr>      mDepthImages;
     std::vector<grfx::ImagePtr>      mColorImages;
+    std::vector<grfx::RenderTargetViewPtr> mClearRenderTargets;
+    std::vector<grfx::RenderTargetViewPtr> mLoadRenderTargets;
+    std::vector<grfx::DepthStencilViewPtr> mDepthStencilViews;
     std::vector<grfx::RenderPassPtr> mClearRenderPasses;
     std::vector<grfx::RenderPassPtr> mLoadRenderPasses;
 

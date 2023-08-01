@@ -108,6 +108,8 @@ void FillOutGraphicsPipelineCreateInfo(
     // Set to default values
     *pDstCreateInfo = {};
 
+    pDstCreateInfo->dynamicRenderPass = pSrcCreateInfo->dynamicRenderPass;
+
     // Shaders
     pDstCreateInfo->VS = pSrcCreateInfo->VS;
     pDstCreateInfo->PS = pSrcCreateInfo->PS;

@@ -295,6 +295,12 @@ struct ApplicationSettings
 
     struct
     {
+        bool dynamicRendering;
+        bool pushDescriptors;
+    } enabledFeatures;
+
+    struct
+    {
         grfx::Api api               = grfx::API_UNDEFINED;
         bool      enableDebug       = false;
         uint32_t  numFramesInFlight = 1;
