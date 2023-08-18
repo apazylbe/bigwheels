@@ -63,7 +63,7 @@ private:
 // Struct members
 struct MyStruct {
     int     mode    = 0;
-    Device* pDevice = nuullptr;
+    Device* pDevice = nullptr;
 };
 
 // Fill in struct used with functions - no need to initialize these
@@ -99,7 +99,7 @@ BigWheels has a `.clang-format` file in the root of the project. It's recommende
 
 ### Using `clang-format off` and `clang-format on` tags
 
-`clang-format off` and `clang-format on` should be use wherever makes sense. For instance specifying geometry data.
+`clang-format off` and `clang-format on` should be used wherever makes sense. For instance, when specifying geometry data.
 
 Avoid using  `clang-format off` and `clang-format on` to circumvent coding guidelines. 
 
@@ -137,7 +137,7 @@ If the type name or variable causes the initial assignment to be visually jarrin
 VkPhysicalDeviceDescriptorIndexingFeatures descriptorIndexingFeatures = {}; 
 auto                                       res                        = GetFeatures(descriptorIndexingFeatures);
 
-// Use empty comment break assignment alignment for easier readabiilty
+// Use empty comment to break assignment alignment for easier readabiilty
 VkPhysicalDeviceDescriptorIndexingFeatures descriptorIndexingFeatures = {}; 
 //
 auto res = GetFeatures(descriptorIndexingFeatures);
@@ -203,7 +203,7 @@ Macros and macro arguments should be all upper case and use underscore to separa
 
 ### Enums
 
-Enum type names should be camel cased with the first letter upper cased. Enum values should be all upper cased and use underscore to separate words. Enum names must have the enun type prefixed.
+Enum type names should be camel cased with the first letter upper cased. Enum values should be all upper cased and use underscore to separate words. Enum names must have the enum type prefixed.
 
 Enum should specify values to aid debugging, but there are cases where this is impractical and values can be omitted. Use your best judgment.
 
@@ -216,7 +216,7 @@ enum HeapType {
 
 ### Constants
 
-Constant names shoudl use one of the following two conventions:
+Constant names should use one of the following two conventions:
  1. Constant names are upper cased and use underscore to separate words. 
  1. Constant names are camel cased with a `k` prefix.
 
@@ -580,7 +580,7 @@ if (cond1) {
 ## Comments
 Both C and C++ style comments can be used freely.  
 
-*NOTE: While there are some Doxygen style comments for classes, these may change in the future to remove the Doxygen tags Doxygen isn't to generate documentation for BigWheels.*
+*NOTE: While there are some Doxygen style comments for classes, these may a change in the future to remove the Doxygen tags. Doxygen isn't used to generate documentation for BigWheels.*
 
 ## Usage of C++ features
 
@@ -588,7 +588,7 @@ C++ features up to the version of C++ that is specified in the top level `CMakeL
 
 Please take caution when using an esoteric C++ feature. This can create difficult debugging scenarios later.
 
-Please take caution with extensive use the STL. Common data structures like `std::vector` can be used freely. However, algorithms that make heavy use of C++ templates can be very difficult to debug. If the use of theses algorithms are unavoidable - incude a comment expressing the intent of the code.
+Please take caution with extensive use the STL. Common data structures like `std::vector` can be used freely. However, algorithms that make heavy use of C++ templates can be very difficult to debug. If the use of these algorithms is unavoidable - incude a comment expressing the intent of the code.
 
 ## Usage C++ `templates`
 
