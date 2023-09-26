@@ -48,10 +48,6 @@ void Surface::DestroyApiObjects()
 // -------------------------------------------------------------------------------------------------
 Result Swapchain::CreateApiObjects(const grfx::SwapchainCreateInfo* pCreateInfo)
 {
-    if (IsHeadless()) {
-        return ppx::SUCCESS;
-    }
-
     std::vector<ID3D12Resource*> colorImages;
 
 #if defined(PPX_BUILD_XR)
@@ -321,7 +317,7 @@ Result Swapchain::CreateColorImages(uint32_t width, uint32_t height, grfx::Forma
     return ppx::SUCCESS;
 }
 
-Result Swapchain::AcquireNextImageInternal(
+Result SurfaceSwapchain::AcquireNextImageInternal(
     uint64_t         timeout,
     grfx::Semaphore* pSemaphore,
     grfx::Fence*     pFence,
@@ -372,7 +368,7 @@ Result Swapchain::AcquireNextImageInternal(
     return ppx::SUCCESS;
 }
 
-Result Swapchain::PresentInternal(
+Result SurfaceSwapchain::PresentInternal(
     uint32_t                      imageIndex,
     uint32_t                      waitSemaphoreCount,
     const grfx::Semaphore* const* ppWaitSemaphores)

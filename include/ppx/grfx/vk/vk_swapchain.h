@@ -63,14 +63,41 @@ private:
 //! @class Swapchain
 //!
 //!
-class Swapchain
-    : public grfx::Swapchain
+class SurfaceSwapchain
+    : public grfx::SurfaceSwapchain
 {
 public:
-    Swapchain() {}
-    virtual ~Swapchain() {}
+    SurfaceSwapchain() {}
+    virtual ~SurfaceSwapchain() {}
 
     VkSwapchainPtr GetVkSwapchain() const { return mSwapchain; }
+
+protected:
+        virtual Result        AcquireNextImageImpl(
+               uint64_t         timeout,    // Nanoseconds
+               grfx::Semaphore* pSemaphore, // Wait sempahore
+               grfx::Fence*     pFence,     // Wait fence
+               uint32_t*        pImageIndex) override;
+
+    virtual Result PresentImpl(
+        uint32_t                      imageIndex,
+        uint32_t                      waitSemaphoreCount,
+        const grfx::Semaphore* const* ppWaitSemaphores) override;
+    virtual Result Resize(uint32_t width, uint32_t height) override { return ppx::ERROR_FAILED; }
+    
+    virtual Result CreateApiObjects(const grfx::SwapchainCreateInfo* pCreateInfo) override;
+    virtual void   DestroyApiObjects() override;
+
+private:
+    VkSwapchainPtr mSwapchain;
+    VkQueuePtr     mQueue;
+};
+
+class XRSwapchain : public grfx::XRSwapchain
+{
+public:
+    XRSwapchain() {}
+    virtual ~XRSwapchain() {}
 
     virtual Result Resize(uint32_t width, uint32_t height) override { return ppx::ERROR_FAILED; }
 
@@ -79,20 +106,7 @@ protected:
     virtual void   DestroyApiObjects() override;
 
 private:
-    virtual Result AcquireNextImageInternal(
-        uint64_t         timeout,
-        grfx::Semaphore* pSemaphore,
-        grfx::Fence*     pFence,
-        uint32_t*        pImageIndex) override;
-
-    virtual Result PresentInternal(
-        uint32_t                      imageIndex,
-        uint32_t                      waitSemaphoreCount,
-        const grfx::Semaphore* const* ppWaitSemaphores) override;
-
-private:
-    VkSwapchainPtr mSwapchain;
-    VkQueuePtr     mQueue;
+    VkQueuePtr mQueue;
 };
 
 } // namespace vk

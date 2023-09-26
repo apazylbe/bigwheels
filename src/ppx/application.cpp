@@ -423,15 +423,19 @@ Result Application::CreateSwapchains()
         PPX_ASSERT_MSG(viewCount != 0, "The config views should be already created at this point!");
 
         grfx::SwapchainCreateInfo ci = {};
+        ci.type                      = grfx::SwapchainType::SWAPCHAIN_TYPE_XR;
         ci.pQueue                    = mDevice->GetGraphicsQueue();
         ci.pSurface                  = nullptr;
         ci.width                     = mSettings.window.width;
         ci.height                    = mSettings.window.height;
         ci.colorFormat               = mXrComponent.GetColorFormat();
-        ci.depthFormat               = mXrComponent.GetDepthFormat();
+
         ci.imageCount                = 0;                            // This will be derived from XrSwapchain.
-        ci.presentMode               = grfx::PRESENT_MODE_UNDEFINED; // No present for XR.
-        ci.pXrComponent              = &mXrComponent;
+
+        ci.sampleCount = mXrComponent.GetSampleCount();
+        if (mXrComponent.UsesDepthSwapchains()) {
+            ci.depthFormat = mXrComponent.GetDepthFormat();
+        }
 
         // We have one swapchain for each view, and one swapchain for the UI.
         mSwapchains.resize(viewCount + 1);
@@ -503,13 +507,15 @@ Result Application::CreateSwapchains()
         }
 
         grfx::SwapchainCreateInfo ci = {};
+        ci.type                      = mSurface ? grfx::SwapchainType::SWAPCHAIN_TYPE_SURFACE : grfx::SwapchainType::SWAPCHAIN_TYPE_HEADLESS;
         ci.pQueue                    = mDevice->GetGraphicsQueue();
-        ci.pSurface                  = mSurface;
         ci.width                     = mSettings.window.width;
         ci.height                    = mSettings.window.height;
         ci.colorFormat               = mSettings.grfx.swapchain.colorFormat;
         ci.depthFormat               = mSettings.grfx.swapchain.depthFormat;
         ci.imageCount                = mSettings.grfx.swapchain.imageCount;
+
+        ci.pSurface                  = mSurface;
         ci.presentMode               = grfx::PRESENT_MODE_IMMEDIATE;
 
         grfx::SwapchainPtr swapchain;
@@ -1385,11 +1391,12 @@ int Application::Run(int argc, char** argv)
                     if (mImGui) {
                         mImGui->NewFrame();
                     }
+                    // TODO: add these to a method within XRSwapchain itself (perhaps in Present())
                     for (uint32_t k = 0; k < viewCount; ++k) {
                         mSwapchainIndex = k;
                         mXrComponent.SetCurrentViewIndex(k);
                         DispatchRender();
-                        grfx::SwapchainPtr swapchain = GetSwapchain(k + mStereoscopicSwapchainIndex);
+                        grfx::XRSwapchain* swapchain = reinterpret_cast<grfx::XRSwapchain*>(GetSwapchain(k + mStereoscopicSwapchainIndex).Get());
                         CHECK_XR_CALL(xrReleaseSwapchainImage(swapchain->GetXrColorSwapchain(), &releaseInfo));
                         if (swapchain->GetXrDepthSwapchain() != XR_NULL_HANDLE) {
                             CHECK_XR_CALL(xrReleaseSwapchainImage(swapchain->GetXrDepthSwapchain(), &releaseInfo));
@@ -1397,7 +1404,7 @@ int Application::Run(int argc, char** argv)
                     }
 
                     if (GetSettings()->enableImGui) {
-                        grfx::SwapchainPtr swapchain = GetSwapchain(mUISwapchainIndex);
+                        grfx::XRSwapchain* swapchain = reinterpret_cast<grfx::XRSwapchain*>(GetSwapchain(mUISwapchainIndex).Get());
                         CHECK_XR_CALL(xrReleaseSwapchainImage(swapchain->GetXrColorSwapchain(), &releaseInfo));
                         if (swapchain->GetXrDepthSwapchain() != XR_NULL_HANDLE) {
                             CHECK_XR_CALL(xrReleaseSwapchainImage(swapchain->GetXrDepthSwapchain(), &releaseInfo));

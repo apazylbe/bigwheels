@@ -66,7 +66,9 @@ void Device::Destroy()
     DestroyAllObjects(mSemaphores);
     DestroyAllObjects(mStorageImageViews);
     DestroyAllObjects(mShaderModules);
-    DestroyAllObjects(mSwapchains);
+    DestroyAllObjects(mHeadlessSwapchains);
+    DestroyAllObjects(mSurfaceSwapchains);
+    DestroyAllObjects(mXRSwapchains);
 
     grfx::InstanceObject<grfx::DeviceCreateInfo>::Destroy();
     PPX_LOG_INFO("Destroyed device: " << mCreateInfo.pGpu->GetDeviceName());
@@ -218,6 +220,16 @@ Result Device::AllocateObject(grfx::Texture** ppObject)
 Result Device::AllocateObject(grfx::TextureFont** ppObject)
 {
     grfx::TextureFont* pObject = new grfx::TextureFont();
+    if (IsNull(pObject)) {
+        return ppx::ERROR_ALLOCATION_FAILED;
+    }
+    *ppObject = pObject;
+    return ppx::SUCCESS;
+}
+
+Result Device::AllocateObject(grfx::HeadlessSwapchain** ppObject)
+{
+    grfx::HeadlessSwapchain* pObject = new grfx::HeadlessSwapchain();
     if (IsNull(pObject)) {
         return ppx::ERROR_ALLOCATION_FAILED;
     }
@@ -559,13 +571,43 @@ Result Device::CreateSwapchain(const grfx::SwapchainCreateInfo* pCreateInfo, grf
 {
     PPX_ASSERT_NULL_ARG(pCreateInfo);
     PPX_ASSERT_NULL_ARG(ppSwapchain);
-    return CreateObject(pCreateInfo, mSwapchains, ppSwapchain);
+
+    Result result;
+    switch (pCreateInfo->type) {
+        default:
+            PPX_ASSERT_MSG(false, "Unknown swapchain type " << static_cast<size_t>(pCreateInfo->type));
+            break;
+        case grfx::SwapchainType::SWAPCHAIN_TYPE_XR:
+            result = CreateObject(pCreateInfo, mXRSwapchains, (grfx::XRSwapchain**)ppSwapchain);
+            break;
+        case grfx::SwapchainType::SWAPCHAIN_TYPE_SURFACE:
+            result = CreateObject(pCreateInfo, mSurfaceSwapchains, (grfx::SurfaceSwapchain**)ppSwapchain);
+            break;
+        case grfx::SwapchainType::SWAPCHAIN_TYPE_HEADLESS:
+            result = CreateObject(pCreateInfo, mHeadlessSwapchains, (grfx::HeadlessSwapchain**)ppSwapchain);
+            break;
+    }
+    return result;
 }
 
 void Device::DestroySwapchain(const grfx::Swapchain* pSwapchain)
 {
     PPX_ASSERT_NULL_ARG(pSwapchain);
-    DestroyObject(mSwapchains, pSwapchain);
+
+    switch (pSwapchain->GetType()) {
+        default:
+            PPX_ASSERT_MSG(false, "Unknown swapchain type " << static_cast<size_t>(pSwapchain->GetType()));
+            break;
+        case grfx::SwapchainType::SWAPCHAIN_TYPE_HEADLESS:
+            DestroyObject(mHeadlessSwapchains, dynamic_cast<const grfx::HeadlessSwapchain*>(pSwapchain));
+            break;
+        case grfx::SwapchainType::SWAPCHAIN_TYPE_SURFACE:
+            DestroyObject(mSurfaceSwapchains, dynamic_cast<const grfx::SurfaceSwapchain*>(pSwapchain));
+            break;
+        case grfx::SwapchainType::SWAPCHAIN_TYPE_XR:
+            DestroyObject(mXRSwapchains, dynamic_cast<const grfx::XRSwapchain*>(pSwapchain));
+            break;
+    }
 }
 
 Result Device::CreateTextDraw(const grfx::TextDrawCreateInfo* pCreateInfo, grfx::TextDraw** ppTextDraw)

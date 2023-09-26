@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "ppx/grfx/grfx_swapchain.h"
 #include "ppx/grfx/vk/vk_device.h"
 #include "ppx/grfx/vk/vk_buffer.h"
 #include "ppx/grfx/vk/vk_command.h"
@@ -727,9 +728,21 @@ Result Device::AllocateObject(grfx::StorageImageView** ppObject)
     return ppx::SUCCESS;
 }
 
-Result Device::AllocateObject(grfx::Swapchain** ppObject)
+Result Device::AllocateObject(grfx::XRSwapchain** ppObject)
 {
-    vk::Swapchain* pObject = new vk::Swapchain();
+    // TODO:
+    vk::XRSwapchain* pObject = new vk::XRSwapchain();
+    if (IsNull(pObject)) {
+        return ppx::ERROR_ALLOCATION_FAILED;
+    }
+    *ppObject = pObject;
+    return ppx::SUCCESS;
+}
+
+Result Device::AllocateObject(grfx::SurfaceSwapchain** ppObject)
+{
+    // TODO:
+    vk::SurfaceSwapchain* pObject = new vk::SurfaceSwapchain();
     if (IsNull(pObject)) {
         return ppx::ERROR_ALLOCATION_FAILED;
     }

@@ -575,11 +575,11 @@ void XrComponent::ConditionallyPopulateProjectionLayer(const std::vector<grfx::S
         XrCompositionLayerProjectionView view = {XR_TYPE_COMPOSITION_LAYER_PROJECTION_VIEW};
         view.pose                             = mViews[i].pose;
         view.fov                              = mViews[i].fov;
-        view.subImage.swapchain               = swapchains[startIndex + i]->GetXrColorSwapchain();
+        view.subImage.swapchain               = reinterpret_cast<grfx::XRSwapchain*>(swapchains[startIndex + i].Get())->GetXrColorSwapchain();
         view.subImage.imageRect.offset        = {0, 0};
         view.subImage.imageRect.extent        = {static_cast<int>(GetWidth()), static_cast<int>(GetHeight())};
 
-        if (mShouldSubmitDepthInfo && (swapchains[startIndex + i]->GetXrDepthSwapchain() != XR_NULL_HANDLE)) {
+        if (mShouldSubmitDepthInfo && (reinterpret_cast<grfx::XRSwapchain*>(swapchains[startIndex + i].Get())->GetXrDepthSwapchain() != XR_NULL_HANDLE)) {
             PPX_ASSERT_MSG(mNearPlaneForFrame.has_value() && mFarPlaneForFrame.has_value(), "Depth info layer cannot be submitted because near and far plane values are not set. "
                                                                                             "Call GetProjectionMatrixForCurrentViewAndSetFrustumPlanes to set per-frame values.");
             XrCompositionLayerDepthInfoKHR depthInfo = {XR_TYPE_COMPOSITION_LAYER_DEPTH_INFO_KHR};
@@ -587,7 +587,7 @@ void XrComponent::ConditionallyPopulateProjectionLayer(const std::vector<grfx::S
             depthInfo.maxDepth                       = 1.0f;
             depthInfo.nearZ                          = *mNearPlaneForFrame;
             depthInfo.farZ                           = *mFarPlaneForFrame;
-            depthInfo.subImage.swapchain             = swapchains[startIndex + i]->GetXrDepthSwapchain();
+            depthInfo.subImage.swapchain             = reinterpret_cast<grfx::XRSwapchain*>(swapchains[startIndex + i].Get())->GetXrDepthSwapchain();
             depthInfo.subImage.imageRect.offset      = {0, 0};
             depthInfo.subImage.imageRect.extent      = {static_cast<int>(GetWidth()), static_cast<int>(GetHeight())};
 
@@ -618,7 +618,7 @@ void XrComponent::ConditionallyPopulateImGuiLayer(const std::vector<grfx::Swapch
     quadLayer.layer().layerFlags                = XR_COMPOSITION_LAYER_BLEND_TEXTURE_SOURCE_ALPHA_BIT;
     quadLayer.layer().space                     = mUISpace;
     quadLayer.layer().eyeVisibility             = XR_EYE_VISIBILITY_BOTH;
-    quadLayer.layer().subImage.swapchain        = swapchains[index]->GetXrColorSwapchain();
+    quadLayer.layer().subImage.swapchain        = reinterpret_cast<grfx::XRSwapchain*>(swapchains[index].Get())->GetXrColorSwapchain();
     quadLayer.layer().subImage.imageRect.offset = {0, 0};
     quadLayer.layer().subImage.imageRect.extent = {static_cast<int>(GetUIWidth()), static_cast<int>(GetUIHeight())};
     quadLayer.layer().pose                      = {{0, 0, 0, 1}, {0, 0, -0.5f}};

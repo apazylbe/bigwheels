@@ -161,7 +161,8 @@ class Semaphore;
 class ShaderModule;
 class StorageImageView;
 class Surface;
-class Swapchain;
+class SurfaceSwapchain;
+class XRSwapchain;
 
 namespace internal {
 
@@ -359,10 +360,17 @@ struct ApiObjectLookUp<grfx::Surface>
 };
 
 template <>
-struct ApiObjectLookUp<grfx::Swapchain>
+struct ApiObjectLookUp<grfx::SurfaceSwapchain>
 {
-    using GrfxType = grfx::Swapchain;
-    using ApiType  = vk::Swapchain;
+    using GrfxType = grfx::SurfaceSwapchain;
+    using ApiType  = vk::SurfaceSwapchain;
+};
+
+template <>
+struct ApiObjectLookUp<grfx::XRSwapchain>
+{
+    using GrfxType = grfx::XRSwapchain;
+    using ApiType  = vk::XRSwapchain;
 };
 
 template <typename GrfxTypeT>
