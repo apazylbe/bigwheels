@@ -52,10 +52,13 @@ class Semaphore;
 class ShaderModule;
 class ShaderProgram;
 class Surface;
+class SurfaceSwapchain;
 class Swapchain;
 class TextDraw;
 class Texture;
 class TextureFont;
+class VirtualSwapchain;
+class XRSwapchain;
 
 class DepthStencilView;
 class RenderTargetView;
@@ -98,10 +101,13 @@ using SemaphorePtr           = ObjPtr<Semaphore>;
 using ShaderModulePtr        = ObjPtr<ShaderModule>;
 using ShaderProgramPtr       = ObjPtr<ShaderProgram>;
 using SurfacePtr             = ObjPtr<Surface>;
+using SurfaceSwapchainPtr    = ObjPtr<SurfaceSwapchain>;
 using SwapchainPtr           = ObjPtr<Swapchain>;
 using TextDrawPtr            = ObjPtr<TextDraw>;
 using TexturePtr             = ObjPtr<Texture>;
 using TextureFontPtr         = ObjPtr<TextureFont>;
+using VirtualSwapchainPtr    = ObjPtr<VirtualSwapchain>;
+using XRSwapchainPtr         = ObjPtr<XRSwapchain>;
 
 using DepthStencilViewPtr = ObjPtr<DepthStencilView>;
 using RenderTargetViewPtr = ObjPtr<RenderTargetView>;

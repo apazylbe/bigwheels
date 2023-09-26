@@ -16,7 +16,7 @@
 #include "ppx/grfx/vk/vk_gpu.h"
 #include "ppx/grfx/vk/vk_device.h"
 #include "ppx/grfx/vk/vk_profiler_fn_wrapper.h"
-#include "ppx/grfx/vk/vk_swapchain.h"
+#include "ppx/grfx/vk/vk_surface_swapchain.h"
 
 namespace ppx {
 namespace grfx {

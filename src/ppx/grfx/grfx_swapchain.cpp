@@ -1,4 +1,4 @@
-// Copyright 2022 Google LLC
+// Copyright 2023 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -22,61 +22,16 @@ namespace grfx {
 
 Result Swapchain::Create(const grfx::SwapchainCreateInfo* pCreateInfo)
 {
-    PPX_ASSERT_NULL_ARG(pCreateInfo->pQueue);
-    if (IsNull(pCreateInfo->pQueue)) {
-        return ppx::ERROR_UNEXPECTED_NULL_ARGUMENT;
-    }
-
     Result ppxres = grfx::DeviceObject<grfx::SwapchainCreateInfo>::Create(pCreateInfo);
     if (Failed(ppxres)) {
         return ppxres;
-    }
-
-    // Update the stored create info's image count since the actual
-    // number of images might be different (hopefully more) than
-    // what was originally requested.
-    if (!IsHeadless()) {
-        mCreateInfo.imageCount = CountU32(mColorImages);
-    }
-    if (mCreateInfo.imageCount != pCreateInfo->imageCount) {
-        PPX_LOG_INFO("Swapchain actual image count is different from what was requested\n"
-                     << "   actual    : " << mCreateInfo.imageCount << "\n"
-                     << "   requested : " << pCreateInfo->imageCount);
     }
 
     //
     // NOTE: mCreateInfo will be used from this point on.
     //
 
-    // Create color images if needed. This is only needed if we're creating
-    // a headless swapchain.
-    if (mColorImages.empty()) {
-        for (uint32_t i = 0; i < mCreateInfo.imageCount; ++i) {
-            grfx::ImageCreateInfo rtCreateInfo = ImageCreateInfo::RenderTarget2D(mCreateInfo.width, mCreateInfo.height, mCreateInfo.colorFormat);
-            rtCreateInfo.ownership             = grfx::OWNERSHIP_RESTRICTED;
-            rtCreateInfo.RTVClearValue         = {0.0f, 0.0f, 0.0f, 0.0f};
-            rtCreateInfo.initialState          = grfx::RESOURCE_STATE_PRESENT;
-            rtCreateInfo.usageFlags =
-                grfx::IMAGE_USAGE_COLOR_ATTACHMENT |
-                grfx::IMAGE_USAGE_TRANSFER_SRC |
-                grfx::IMAGE_USAGE_TRANSFER_DST |
-                grfx::IMAGE_USAGE_SAMPLED;
-
-            grfx::ImagePtr renderTarget;
-            ppxres = GetDevice()->CreateImage(&rtCreateInfo, &renderTarget);
-            if (Failed(ppxres)) {
-                return ppxres;
-            }
-
-            mColorImages.push_back(renderTarget);
-        }
-    }
-
-    // Create depth images if needed. This is usually needed for both normal swapchains
-    // and headless swapchains, but not needed for XR swapchains which create their own
-    // depth images.
-    //
-    ppxres = CreateDepthImages();
+    ppxres = CreateInternal();
     if (Failed(ppxres)) {
         return ppxres;
     }
@@ -89,20 +44,6 @@ Result Swapchain::Create(const grfx::SwapchainCreateInfo* pCreateInfo)
     ppxres = CreateRenderPasses();
     if (Failed(ppxres)) {
         return ppxres;
-    }
-
-    if (IsHeadless()) {
-        // Set mCurrentImageIndex to (imageCount - 1) so that the first
-        // AcquireNextImage call acquires the first image at index 0.
-        mCurrentImageIndex = mCreateInfo.imageCount - 1;
-
-        // Create command buffers to signal and wait semaphores at
-        // AcquireNextImage and Present calls.
-        for (uint32_t i = 0; i < mCreateInfo.imageCount; ++i) {
-            grfx::CommandBufferPtr commandBuffer = nullptr;
-            mCreateInfo.pQueue->CreateCommandBuffer(&commandBuffer, 0, 0);
-            mHeadlessCommandBuffers.push_back(commandBuffer);
-        }
     }
 
     PPX_LOG_INFO("Swapchain created");
@@ -124,21 +65,7 @@ void Swapchain::Destroy()
 
     DestroyColorImages();
 
-#if defined(PPX_BUILD_XR)
-    if (mXrColorSwapchain != XR_NULL_HANDLE) {
-        xrDestroySwapchain(mXrColorSwapchain);
-    }
-    if (mXrDepthSwapchain != XR_NULL_HANDLE) {
-        xrDestroySwapchain(mXrDepthSwapchain);
-    }
-#endif
-
-    for (auto& elem : mHeadlessCommandBuffers) {
-        if (elem) {
-            mCreateInfo.pQueue->DestroyCommandBuffer(elem);
-        }
-    }
-    mHeadlessCommandBuffers.clear();
+    DestroyInternal();
 
     grfx::DeviceObject<grfx::SwapchainCreateInfo>::Destroy();
 }
@@ -151,27 +78,6 @@ void Swapchain::DestroyColorImages()
         }
     }
     mColorImages.clear();
-}
-
-Result Swapchain::CreateDepthImages()
-{
-    if ((mCreateInfo.depthFormat != grfx::FORMAT_UNDEFINED) && mDepthImages.empty()) {
-        for (uint32_t i = 0; i < mCreateInfo.imageCount; ++i) {
-            grfx::ImageCreateInfo dpCreateInfo = ImageCreateInfo::DepthStencilTarget(mCreateInfo.width, mCreateInfo.height, mCreateInfo.depthFormat);
-            dpCreateInfo.ownership             = grfx::OWNERSHIP_RESTRICTED;
-            dpCreateInfo.DSVClearValue         = {1.0f, 0xFF};
-
-            grfx::ImagePtr depthStencilTarget;
-            auto           ppxres = GetDevice()->CreateImage(&dpCreateInfo, &depthStencilTarget);
-            if (Failed(ppxres)) {
-                return ppxres;
-            }
-
-            mDepthImages.push_back(depthStencilTarget);
-        }
-    }
-
-    return ppx::SUCCESS;
 }
 
 void Swapchain::DestroyDepthImages()
@@ -316,15 +222,6 @@ void Swapchain::DestroyRenderPasses()
     mLoadRenderPasses.clear();
 }
 
-bool Swapchain::IsHeadless() const
-{
-#if defined(PPX_BUILD_XR)
-    return mCreateInfo.pXrComponent == nullptr && mCreateInfo.pSurface == nullptr;
-#else
-    return mCreateInfo.pSurface == nullptr;
-#endif
-}
-
 Result Swapchain::GetColorImage(uint32_t imageIndex, grfx::Image** ppImage) const
 {
     if (!IsIndexInRange(imageIndex, mColorImages)) {
@@ -413,96 +310,6 @@ grfx::DepthStencilViewPtr Swapchain::GetDepthStencilView(uint32_t imageIndex) co
     grfx::DepthStencilViewPtr object;
     GetDepthStencilView(imageIndex, &object);
     return object;
-}
-
-Result Swapchain::AcquireNextImage(
-    uint64_t         timeout,    // Nanoseconds
-    grfx::Semaphore* pSemaphore, // Wait sempahore
-    grfx::Fence*     pFence,     // Wait fence
-    uint32_t*        pImageIndex)
-{
-#if defined(PPX_BUILD_XR)
-    if (mCreateInfo.pXrComponent != nullptr) {
-        PPX_ASSERT_MSG(mXrColorSwapchain != XR_NULL_HANDLE, "Invalid color xrSwapchain handle!");
-        PPX_ASSERT_MSG(pSemaphore == nullptr, "Should not use semaphore when XR is enabled!");
-        PPX_ASSERT_MSG(pFence == nullptr, "Should not use fence when XR is enabled!");
-        XrSwapchainImageAcquireInfo acquire_info = {XR_TYPE_SWAPCHAIN_IMAGE_ACQUIRE_INFO};
-        CHECK_XR_CALL(xrAcquireSwapchainImage(mXrColorSwapchain, &acquire_info, pImageIndex));
-
-        XrSwapchainImageWaitInfo wait_info = {XR_TYPE_SWAPCHAIN_IMAGE_WAIT_INFO};
-        wait_info.timeout                  = XR_INFINITE_DURATION;
-        CHECK_XR_CALL(xrWaitSwapchainImage(mXrColorSwapchain, &wait_info));
-
-        if (mXrDepthSwapchain != XR_NULL_HANDLE) {
-            uint32_t                    colorImageIndex = *pImageIndex;
-            XrSwapchainImageAcquireInfo acquire_info    = {XR_TYPE_SWAPCHAIN_IMAGE_ACQUIRE_INFO};
-            CHECK_XR_CALL(xrAcquireSwapchainImage(mXrDepthSwapchain, &acquire_info, pImageIndex));
-
-            XrSwapchainImageWaitInfo wait_info = {XR_TYPE_SWAPCHAIN_IMAGE_WAIT_INFO};
-            wait_info.timeout                  = XR_INFINITE_DURATION;
-            CHECK_XR_CALL(xrWaitSwapchainImage(mXrDepthSwapchain, &wait_info));
-
-            PPX_ASSERT_MSG(colorImageIndex == *pImageIndex, "Color and depth swapchain image indices are different");
-        }
-        return ppx::SUCCESS;
-    }
-#endif
-
-    if (IsHeadless()) {
-        return AcquireNextImageHeadless(timeout, pSemaphore, pFence, pImageIndex);
-    }
-
-    return AcquireNextImageInternal(timeout, pSemaphore, pFence, pImageIndex);
-}
-
-Result Swapchain::Present(
-    uint32_t                      imageIndex,
-    uint32_t                      waitSemaphoreCount,
-    const grfx::Semaphore* const* ppWaitSemaphores)
-{
-    if (IsHeadless()) {
-        return PresentHeadless(imageIndex, waitSemaphoreCount, ppWaitSemaphores);
-    }
-
-    return PresentInternal(imageIndex, waitSemaphoreCount, ppWaitSemaphores);
-}
-
-Result Swapchain::AcquireNextImageHeadless(uint64_t timeout, grfx::Semaphore* pSemaphore, grfx::Fence* pFence, uint32_t* pImageIndex)
-{
-    *pImageIndex       = (mCurrentImageIndex + 1u) % CountU32(mColorImages);
-    mCurrentImageIndex = *pImageIndex;
-
-    grfx::CommandBufferPtr commandBuffer = mHeadlessCommandBuffers[mCurrentImageIndex];
-
-    commandBuffer->Begin();
-    commandBuffer->End();
-
-    grfx::SubmitInfo sInfo     = {};
-    sInfo.ppCommandBuffers     = &commandBuffer;
-    sInfo.commandBufferCount   = 1;
-    sInfo.pFence               = pFence;
-    sInfo.ppSignalSemaphores   = &pSemaphore;
-    sInfo.signalSemaphoreCount = 1;
-    mCreateInfo.pQueue->Submit(&sInfo);
-
-    return ppx::SUCCESS;
-}
-
-Result Swapchain::PresentHeadless(uint32_t imageIndex, uint32_t waitSemaphoreCount, const grfx::Semaphore* const* ppWaitSemaphores)
-{
-    grfx::CommandBufferPtr commandBuffer = mHeadlessCommandBuffers[mCurrentImageIndex];
-
-    commandBuffer->Begin();
-    commandBuffer->End();
-
-    grfx::SubmitInfo sInfo   = {};
-    sInfo.ppCommandBuffers   = &commandBuffer;
-    sInfo.commandBufferCount = 1;
-    sInfo.ppWaitSemaphores   = ppWaitSemaphores;
-    sInfo.waitSemaphoreCount = waitSemaphoreCount;
-    mCreateInfo.pQueue->Submit(&sInfo);
-
-    return ppx::SUCCESS;
 }
 
 } // namespace grfx

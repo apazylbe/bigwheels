@@ -577,9 +577,19 @@ Result Device::AllocateObject(grfx::StorageImageView** ppObject)
     return ppx::SUCCESS;
 }
 
-Result Device::AllocateObject(grfx::Swapchain** ppObject)
+Result Device::AllocateObject(grfx::SurfaceSwapchain** ppObject)
 {
-    dx12::Swapchain* pObject = new dx12::Swapchain();
+    dx12::SurfaceSwapchain* pObject = new dx12::SurfaceSwapchain();
+    if (IsNull(pObject)) {
+        return ppx::ERROR_ALLOCATION_FAILED;
+    }
+    *ppObject = pObject;
+    return ppx::SUCCESS;
+}
+
+Result Device::AllocateObject(grfx::XRSwapchain** ppObject)
+{
+    dx12::XRSwapchain* pObject = new dx12::XRSwapchain();
     if (IsNull(pObject)) {
         return ppx::ERROR_ALLOCATION_FAILED;
     }

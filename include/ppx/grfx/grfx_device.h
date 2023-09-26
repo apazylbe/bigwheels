@@ -212,8 +212,10 @@ protected:
     virtual Result AllocateObject(grfx::ShaderModule** ppObject)        = 0;
     virtual Result AllocateObject(grfx::ShaderProgram** ppObject)       = 0;
     virtual Result AllocateObject(grfx::StorageImageView** ppObject)    = 0;
-    virtual Result AllocateObject(grfx::Swapchain** ppObject)           = 0;
+    virtual Result AllocateObject(grfx::SurfaceSwapchain** ppObject)    = 0;
+    virtual Result AllocateObject(grfx::XRSwapchain** ppObject)         = 0;
 
+    virtual Result AllocateObject(grfx::VirtualSwapchain** ppObject);
     virtual Result AllocateObject(grfx::DrawPass** ppObject);
     virtual Result AllocateObject(grfx::FullscreenQuad** ppObject);
     virtual Result AllocateObject(grfx::Mesh** ppObject);
@@ -265,13 +267,15 @@ protected:
     std::vector<grfx::ShaderModulePtr>        mShaderModules;
     std::vector<grfx::ShaderProgramPtr>       mShaderPrograms;
     std::vector<grfx::StorageImageViewPtr>    mStorageImageViews;
-    std::vector<grfx::SwapchainPtr>           mSwapchains;
+    std::vector<grfx::SurfaceSwapchainPtr>    mSurfaceSwapchains;
     std::vector<grfx::TextDrawPtr>            mTextDraws;
     std::vector<grfx::TexturePtr>             mTextures;
     std::vector<grfx::TextureFontPtr>         mTextureFonts;
+    std::vector<grfx::VirtualSwapchainPtr>    mVirtualSwapchains;
     std::vector<grfx::QueuePtr>               mGraphicsQueues;
     std::vector<grfx::QueuePtr>               mComputeQueues;
     std::vector<grfx::QueuePtr>               mTransferQueues;
+    std::vector<grfx::XRSwapchainPtr>         mXRSwapchains;
 };
 
 } // namespace grfx

@@ -18,6 +18,7 @@
 #include "ppx/grfx/grfx_config.h"
 #include "ppx/grfx/grfx_device.h"
 #include "ppx/grfx/grfx_gpu.h"
+#include "ppx/grfx/grfx_surface_swapchain.h"
 
 #if defined(PPX_BUILD_XR)
 #include "ppx/xr_component.h"

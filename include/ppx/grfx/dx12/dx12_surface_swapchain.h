@@ -1,4 +1,4 @@
-// Copyright 2022 Google LLC
+// Copyright 2023 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef ppx_grfx_dx12_swapchain_h
-#define ppx_grfx_dx12_swapchain_h
+#ifndef ppx_grfx_dx12_surface_swapchain_h
+#define ppx_grfx_dx12_surface_swapchain_h
 
 #include "ppx/grfx/dx12/dx12_config.h"
-#include "ppx/grfx/grfx_swapchain.h"
+#include "ppx/grfx/grfx_surface_swapchain.h"
 
 namespace ppx {
 namespace grfx {
@@ -48,12 +48,12 @@ private:
 
 // -------------------------------------------------------------------------------------------------
 
-class Swapchain
-    : public grfx::Swapchain
+class SurfaceSwapchain
+    : public grfx::SurfaceSwapchain
 {
 public:
-    Swapchain() {}
-    virtual ~Swapchain() {}
+    SurfaceSwapchain() {}
+    virtual ~SurfaceSwapchain() {}
 
     virtual Result Resize(uint32_t width, uint32_t height) override;
 
@@ -62,13 +62,13 @@ protected:
     virtual void   DestroyApiObjects() override;
 
 private:
-    virtual Result AcquireNextImageInternal(
+    virtual Result AcquireNextImageImpl(
         uint64_t         timeout,
         grfx::Semaphore* pSemaphore,
         grfx::Fence*     pFence,
         uint32_t*        pImageIndex) override;
 
-    virtual Result PresentInternal(
+    virtual Result PresentImpl(
         uint32_t                      imageIndex,
         uint32_t                      waitSemaphoreCount,
         const grfx::Semaphore* const* ppWaitSemaphores) override;
@@ -81,7 +81,7 @@ private:
     D3D12CommandQueuePtr mQueue;
 
     //
-    // Store sync internval so we can control its behavior based
+    // Store sync interval so we can control its behavior based
     // on which present mode the client requested.
     //
     // See:
@@ -99,4 +99,4 @@ private:
 } // namespace grfx
 } // namespace ppx
 
-#endif // ppx_grfx_dx12_swapchain_h
+#endif // ppx_grfx_dx12_surface_swapchain_h

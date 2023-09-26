@@ -16,7 +16,6 @@
 #include "ppx/grfx/vk/vk_command.h"
 #include "ppx/grfx/vk/vk_device.h"
 #include "ppx/grfx/vk/vk_gpu.h"
-#include "ppx/grfx/vk/vk_swapchain.h"
 #include "ppx/grfx/vk/vk_sync.h"
 
 #include "ppx/grfx/vk/vk_profiler_fn_wrapper.h"

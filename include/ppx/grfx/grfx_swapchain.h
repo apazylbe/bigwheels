@@ -1,4 +1,4 @@
-// Copyright 2022 Google LLC
+// Copyright 2023 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@
 #include <limits>
 
 #include "ppx/grfx/grfx_config.h"
+
 #if defined(PPX_BUILD_XR)
 #include "ppx/xr_component.h"
 #endif
@@ -39,55 +40,13 @@
 namespace ppx {
 namespace grfx {
 
-//! @struct SurfaceCreateInfo
-//!
-//!
-struct SurfaceCreateInfo
+enum class SwapchainType : size_t
 {
-    // clang-format off
-    grfx::Gpu*            pGpu = nullptr;
-#if defined(PPX_LINUX_WAYLAND)
-    struct wl_display*    display;
-    struct wl_surface*    surface;
-#elif defined(PPX_LINUX_XCB)
-    xcb_connection_t*     connection;
-    xcb_window_t          window;
-#elif defined(PPX_LINUX_XLIB)
-    Display*              dpy;
-    Window                window;
-#elif defined(PPX_MSW)
-    HINSTANCE             hinstance;
-    HWND                  hwnd;
-#elif defined(PPX_ANDROID)
-    android_app*          androidAppContext;
-#endif
-    // clang-format on
+    SWAPCHAIN_TYPE_UNKNOWN = 0,
+    SWAPCHAIN_TYPE_SURFACE,
+    SWAPCHAIN_TYPE_VIRTUAL,
+    SWAPCHAIN_TYPE_XR,
 };
-
-//! @class Surface
-//!
-//!
-class Surface
-    : public grfx::InstanceObject<grfx::SurfaceCreateInfo>
-{
-public:
-    Surface() {}
-    virtual ~Surface() {}
-
-    virtual uint32_t GetMinImageWidth() const  = 0;
-    virtual uint32_t GetMinImageHeight() const = 0;
-    virtual uint32_t GetMinImageCount() const  = 0;
-    virtual uint32_t GetMaxImageWidth() const  = 0;
-    virtual uint32_t GetMaxImageHeight() const = 0;
-    virtual uint32_t GetMaxImageCount() const  = 0;
-
-    static constexpr uint32_t kInvalidExtent = std::numeric_limits<uint32_t>::max();
-
-    virtual uint32_t GetCurrentImageWidth() const { return kInvalidExtent; }
-    virtual uint32_t GetCurrentImageHeight() const { return kInvalidExtent; }
-};
-
-// -------------------------------------------------------------------------------------------------
 
 //! @struct SwapchainCreateInfo
 //!
@@ -97,30 +56,37 @@ public:
 //!
 struct SwapchainCreateInfo
 {
-    grfx::Queue*      pQueue      = nullptr;
-    grfx::Surface*    pSurface    = nullptr;
+    SwapchainType     type        = grfx::SwapchainType::SWAPCHAIN_TYPE_UNKNOWN;
     uint32_t          width       = 0;
     uint32_t          height      = 0;
     grfx::Format      colorFormat = grfx::FORMAT_UNDEFINED;
     grfx::Format      depthFormat = grfx::FORMAT_UNDEFINED;
+
+    // Virtual and surface swapchain
     uint32_t          imageCount  = 0;
+
+    // Virtual swapchain:
+    grfx::Queue* pQueue = nullptr;
+
+    // Surface swapchain:
+    grfx::Surface*    pSurface    = nullptr;
     grfx::PresentMode presentMode = grfx::PRESENT_MODE_IMMEDIATE;
+
 #if defined(PPX_BUILD_XR)
-    XrComponent* pXrComponent = nullptr;
+    // XR swapchain:
+    uint32_t  sampleCount = 1;
+    XrSession xrSession;
 #endif
 };
 
-//! @class Swapchain
-//!
-//!
+// Swapchain is an abstract class for any type of swapchain.
 class Swapchain
     : public grfx::DeviceObject<grfx::SwapchainCreateInfo>
 {
 public:
     Swapchain() {}
-    virtual ~Swapchain() {}
+    virtual ~Swapchain(){};
 
-    bool         IsHeadless() const;
     uint32_t     GetWidth() const { return mCreateInfo.width; }
     uint32_t     GetHeight() const { return mCreateInfo.height; }
     uint32_t     GetImageCount() const { return mCreateInfo.imageCount; }
@@ -139,38 +105,28 @@ public:
     grfx::RenderPassPtr GetRenderPass(uint32_t imageIndex, grfx::AttachmentLoadOp loadOp = grfx::ATTACHMENT_LOAD_OP_CLEAR) const;
     grfx::RenderTargetViewPtr GetRenderTargetView(uint32_t imageIndex, grfx::AttachmentLoadOp loadOp = grfx::ATTACHMENT_LOAD_OP_CLEAR) const;
     grfx::DepthStencilViewPtr GetDepthStencilView(uint32_t imageIndex) const;
+    uint32_t                  GetCurrentImageIndex() const { return mCurrentImageIndex; }
 
-    Result AcquireNextImage(
-        uint64_t         timeout,    // Nanoseconds
-        grfx::Semaphore* pSemaphore, // Wait sempahore
-        grfx::Fence*     pFence,     // Wait fence
-        uint32_t*        pImageIndex);
+    virtual SwapchainType GetType() const = 0;
+    virtual Result        AcquireNextImage(
+               uint64_t         timeout,    // Nanoseconds
+               grfx::Semaphore* pSemaphore, // Wait sempahore
+               grfx::Fence*     pFence,     // Wait fence
+               uint32_t*        pImageIndex) = 0;
 
-    Result Present(
+    virtual Result Present(
         uint32_t                      imageIndex,
         uint32_t                      waitSemaphoreCount,
-        const grfx::Semaphore* const* ppWaitSemaphores);
-
-    uint32_t GetCurrentImageIndex() const { return mCurrentImageIndex; }
+        const grfx::Semaphore* const* ppWaitSemaphores) = 0;
 
     // D3D12 only, will return ERROR_FAILED on Vulkan
     virtual Result Resize(uint32_t width, uint32_t height) = 0;
 
-#if defined(PPX_BUILD_XR)
-    bool ShouldSkipExternalSynchronization() const
+    virtual bool ShouldSkipExternalSynchronization() const
     {
-        return mCreateInfo.pXrComponent != nullptr;
+        return false;
     }
 
-    XrSwapchain GetXrColorSwapchain() const
-    {
-        return mXrColorSwapchain;
-    }
-    XrSwapchain GetXrDepthSwapchain() const
-    {
-        return mXrDepthSwapchain;
-    }
-#endif
 protected:
     virtual Result Create(const grfx::SwapchainCreateInfo* pCreateInfo) override;
     virtual void   Destroy() override;
@@ -178,52 +134,23 @@ protected:
 
     // Make these protected since D3D12's swapchain resize will need to call them
     void   DestroyColorImages();
-    Result CreateDepthImages();
     void   DestroyDepthImages();
     Result CreateRenderPasses();
     void   DestroyRenderPasses();
     Result CreateRenderTargets();
     void   DestroyRenderTargets();
 
-private:
-    virtual Result AcquireNextImageInternal(
-        uint64_t         timeout,    // Nanoseconds
-        grfx::Semaphore* pSemaphore, // Wait sempahore
-        grfx::Fence*     pFence,     // Wait fence
-        uint32_t*        pImageIndex) = 0;
-
-    virtual Result PresentInternal(
-        uint32_t                      imageIndex,
-        uint32_t                      waitSemaphoreCount,
-        const grfx::Semaphore* const* ppWaitSemaphores) = 0;
-
-    Result AcquireNextImageHeadless(
-        uint64_t         timeout,
-        grfx::Semaphore* pSemaphore,
-        grfx::Fence*     pFence,
-        uint32_t*        pImageIndex);
-
-    Result PresentHeadless(
-        uint32_t                      imageIndex,
-        uint32_t                      waitSemaphoreCount,
-        const grfx::Semaphore* const* ppWaitSemaphores);
-
-    std::vector<grfx::CommandBufferPtr> mHeadlessCommandBuffers;
-
 protected:
-    grfx::QueuePtr                   mQueue;
-    std::vector<grfx::ImagePtr>      mDepthImages;
-    std::vector<grfx::ImagePtr>      mColorImages;
+    virtual Result CreateInternal()  = 0;
+    virtual void   DestroyInternal() = 0;
+
+    std::vector<grfx::ImagePtr>            mDepthImages;
+    std::vector<grfx::ImagePtr>            mColorImages;
     std::vector<grfx::RenderTargetViewPtr> mClearRenderTargets;
     std::vector<grfx::RenderTargetViewPtr> mLoadRenderTargets;
     std::vector<grfx::DepthStencilViewPtr> mDepthStencilViews;
-    std::vector<grfx::RenderPassPtr> mClearRenderPasses;
-    std::vector<grfx::RenderPassPtr> mLoadRenderPasses;
-
-#if defined(PPX_BUILD_XR)
-    XrSwapchain mXrColorSwapchain = XR_NULL_HANDLE;
-    XrSwapchain mXrDepthSwapchain = XR_NULL_HANDLE;
-#endif
+    std::vector<grfx::RenderPassPtr>       mClearRenderPasses;
+    std::vector<grfx::RenderPassPtr>       mLoadRenderPasses;
 
     // Keeps track of the image index returned by the last AcquireNextImage call.
     uint32_t mCurrentImageIndex = 0;

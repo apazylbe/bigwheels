@@ -245,12 +245,18 @@ list(
     ${INC_DIR}/ppx/grfx/grfx_render_pass.h
     ${INC_DIR}/ppx/grfx/grfx_scope.h
     ${INC_DIR}/ppx/grfx/grfx_shader.h
+    ${INC_DIR}/ppx/grfx/grfx_surface_swapchain.h
     ${INC_DIR}/ppx/grfx/grfx_swapchain.h
     ${INC_DIR}/ppx/grfx/grfx_sync.h
     ${INC_DIR}/ppx/grfx/grfx_text_draw.h
     ${INC_DIR}/ppx/grfx/grfx_texture.h
     ${INC_DIR}/ppx/grfx/grfx_util.h
+    ${INC_DIR}/ppx/grfx/grfx_virtual_swapchain.h
 )
+
+if (PPX_BUILD_XR)
+    list (APPEND PPX_GRFX_HEADER_FILES ${INC_DIR}/ppx/grfx/grfx_xr_swapchain.h)
+endif()
 
 list(
     APPEND PPX_GRFX_SOURCE_FILES
@@ -272,12 +278,18 @@ list(
     ${SRC_DIR}/ppx/grfx/grfx_render_pass.cpp
     ${SRC_DIR}/ppx/grfx/grfx_scope.cpp
     ${SRC_DIR}/ppx/grfx/grfx_shader.cpp
+    ${SRC_DIR}/ppx/grfx/grfx_surface_swapchain.cpp
     ${SRC_DIR}/ppx/grfx/grfx_swapchain.cpp
     ${SRC_DIR}/ppx/grfx/grfx_sync.cpp
     ${SRC_DIR}/ppx/grfx/grfx_text_draw.cpp
     ${SRC_DIR}/ppx/grfx/grfx_texture.cpp
     ${SRC_DIR}/ppx/grfx/grfx_util.cpp
+    ${SRC_DIR}/ppx/grfx/grfx_virtual_swapchain.cpp
 )
+
+if (PPX_BUILD_XR)
+    list (APPEND PPX_GRFX_SOURCE_FILES ${SRC_DIR}/ppx/grfx/grfx_xr_swapchain.cpp)
+endif()
 
 list(
     APPEND PPX_SCENE_HEADER_FILES
@@ -327,7 +339,7 @@ if (PPX_D3D12)
         ${INC_DIR}/ppx/grfx/dx12/dx12_queue.h
         ${INC_DIR}/ppx/grfx/dx12/dx12_render_pass.h
         ${INC_DIR}/ppx/grfx/dx12/dx12_shader.h
-        ${INC_DIR}/ppx/grfx/dx12/dx12_swapchain.h
+        ${INC_DIR}/ppx/grfx/dx12/dx12_surface_swapchain.h
         ${INC_DIR}/ppx/grfx/dx12/dx12_sync.h
         ${INC_DIR}/ppx/grfx/dx12/dx12_util.h
     )
@@ -347,12 +359,24 @@ if (PPX_D3D12)
         ${SRC_DIR}/ppx/grfx/dx12/dx12_queue.cpp
         ${SRC_DIR}/ppx/grfx/dx12/dx12_render_pass.cpp
         ${SRC_DIR}/ppx/grfx/dx12/dx12_shader.cpp
-        ${SRC_DIR}/ppx/grfx/dx12/dx12_swapchain.cpp
+        ${SRC_DIR}/ppx/grfx/dx12/dx12_surface_swapchain.cpp
         ${SRC_DIR}/ppx/grfx/dx12/dx12_sync.cpp
         ${SRC_DIR}/ppx/grfx/dx12/dx12_util.cpp
         ${PPX_THIRD_PARTY_DIR}/D3D12MemoryAllocator/include/D3D12MemAlloc.h
         ${PPX_THIRD_PARTY_DIR}/D3D12MemoryAllocator/src/D3D12MemAlloc.cpp
     )
+
+    if (PPX_BUILD_XR)
+        list(
+            APPEND PPX_GRFX_DX12_HEADER_FILES
+            ${INC_DIR}/ppx/grfx/dx12/dx12_xr_swapchain.h
+        )
+
+        list(
+            APPEND PPX_GRFX_DX12_SOURCE_FILES
+            ${SRC_DIR}/ppx/grfx/dx12/dx12_xr_swapchain.cpp
+        )
+    endif()
 endif()
 
 if (PPX_VULKAN)
@@ -372,7 +396,7 @@ if (PPX_VULKAN)
         ${INC_DIR}/ppx/grfx/vk/vk_queue.h
         ${INC_DIR}/ppx/grfx/vk/vk_render_pass.h
         ${INC_DIR}/ppx/grfx/vk/vk_shader.h
-        ${INC_DIR}/ppx/grfx/vk/vk_swapchain.h
+        ${INC_DIR}/ppx/grfx/vk/vk_surface_swapchain.h
         ${INC_DIR}/ppx/grfx/vk/vk_sync.h
         ${INC_DIR}/ppx/grfx/vk/vk_util.h
     )
@@ -393,11 +417,23 @@ if (PPX_VULKAN)
         ${SRC_DIR}/ppx/grfx/vk/vk_queue.cpp
         ${SRC_DIR}/ppx/grfx/vk/vk_render_pass.cpp
         ${SRC_DIR}/ppx/grfx/vk/vk_shader.cpp
-        ${SRC_DIR}/ppx/grfx/vk/vk_swapchain.cpp
+        ${SRC_DIR}/ppx/grfx/vk/vk_surface_swapchain.cpp
         ${SRC_DIR}/ppx/grfx/vk/vk_sync.cpp
         ${SRC_DIR}/ppx/grfx/vk/vk_util.cpp
         ${PPX_THIRD_PARTY_DIR}/VulkanMemoryAllocator/include/vk_mem_alloc.h
     )
+
+    if (PPX_BUILD_XR)
+        list(
+            APPEND PPX_GRFX_VK_HEADER_FILES
+            ${INC_DIR}/ppx/grfx/vk/vk_xr_swapchain.h
+        )
+
+        list(
+            APPEND PPX_GRFX_VK_SOURCE_FILES
+            ${SRC_DIR}/ppx/grfx/vk/vk_xr_swapchain.cpp
+        )
+    endif()
 endif()
 
 # ------------------------------------------------------------------------------
