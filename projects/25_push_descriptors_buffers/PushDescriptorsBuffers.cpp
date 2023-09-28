@@ -344,6 +344,7 @@ void PushDescriptorsBuffersApp::Render()
                 pUniformBuffer->CopyFromSource(sizeof(DrawParams), &drawParams);
                 // Push uniform buffer
                 frame.cmd->PushGraphicsUniformBuffer(mPipelineInterface.Get(), 0, pushDescriptorsSetNumber, 0, pUniformBuffer);
+                frame.cmd->PushGraphicsSampledImage(mPipelineInterface.Get(), 0, pushDescriptorsSetNumber, mSampledImageViews[0]);
             }
             frame.cmd->Draw(36, 1, 0, 0);
 

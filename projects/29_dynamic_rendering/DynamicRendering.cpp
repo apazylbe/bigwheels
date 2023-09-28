@@ -25,10 +25,10 @@ const grfx::Api kApi = grfx::API_VK_1_1;
 void DynamicRenderingApp::Config(ApplicationSettings& settings)
 {
     settings.appName                    = "29_dynamic_rendering";
-    settings.enableImGui                = true;
+    settings.enableImGui                = false;
     settings.grfx.api                   = kApi;
     settings.grfx.swapchain.depthFormat = grfx::FORMAT_D32_FLOAT;
-    settings.grfx.enableDebug           = false;
+    settings.grfx.enableDebug           = true;
 }
 
 void DynamicRenderingApp::Setup()
@@ -221,16 +221,16 @@ void DynamicRenderingApp::Render()
     // Build command buffer
     PPX_CHECKED_CALL(frame.cmd->Begin());
     {
-        frame.cmd->TransitionImageLayout(swapchain->GetColorImage(0), PPX_ALL_SUBRESOURCES, grfx::RESOURCE_STATE_PRESENT, grfx::RESOURCE_STATE_RENDER_TARGET);
+        frame.cmd->TransitionImageLayout(swapchain->GetColorImage(imageIndex), PPX_ALL_SUBRESOURCES, grfx::RESOURCE_STATE_PRESENT, grfx::RESOURCE_STATE_RENDER_TARGET);
         grfx::RenderingInfo renderingInfo = {};
         // renderingInfo.flags.bits.suspending = true;
         renderingInfo.renderArea        = {0, 0, swapchain->GetWidth(), swapchain->GetHeight()};
         renderingInfo.RTVClearCount     = 1;
-        renderingInfo.RTVClearValues[0] = {{0, 0, 0, 0}};
+        renderingInfo.RTVClearValues[0] = {{0.7f, 0.7f, 0.7f, 1.0f}};
         renderingInfo.DSVClearValue     = {1.0f, 0xFF};
         renderingInfo.renderTargetCount = 1;
-        renderingInfo.pRenderTargetViews[0] = swapchain->GetClearRenderTargetView(0);
-        renderingInfo.pDepthStencilView     = swapchain->GetDepthStencilView(0);
+        renderingInfo.pRenderTargetViews[0] = swapchain->GetClearRenderTargetView(imageIndex);
+        renderingInfo.pDepthStencilView     = swapchain->GetDepthStencilView(imageIndex);
 
         frame.cmd->BeginRendering(&renderingInfo);
         {
@@ -243,8 +243,9 @@ void DynamicRenderingApp::Render()
         }
         frame.cmd->EndRendering();
 
-        renderingInfo.pRenderTargetViews[0] = swapchain->GetLoadRenderTargetView(0);
+        renderingInfo.pRenderTargetViews[0] = swapchain->GetLoadRenderTargetView(imageIndex);
         renderingInfo.pDepthStencilView = nullptr;
+
         frame.cmd->BeginRendering(&renderingInfo);
         {
             // Draw ImGui
@@ -252,7 +253,8 @@ void DynamicRenderingApp::Render()
             DrawImGui(frame.cmd);
         }
         frame.cmd->EndRendering();
-        frame.cmd->TransitionImageLayout(swapchain->GetColorImage(0), PPX_ALL_SUBRESOURCES, grfx::RESOURCE_STATE_RENDER_TARGET, grfx::RESOURCE_STATE_PRESENT);
+
+        frame.cmd->TransitionImageLayout(swapchain->GetColorImage(imageIndex), PPX_ALL_SUBRESOURCES, grfx::RESOURCE_STATE_RENDER_TARGET, grfx::RESOURCE_STATE_PRESENT);
     }
     PPX_CHECKED_CALL(frame.cmd->End());
 
