@@ -25,7 +25,7 @@ const grfx::Api kApi = grfx::API_VK_1_1;
 void DynamicRenderingApp::Config(ApplicationSettings& settings)
 {
     settings.appName                    = "29_dynamic_rendering";
-    settings.enableImGui                = false;
+    settings.enableImGui                = true;
     settings.grfx.api                   = kApi;
     settings.grfx.swapchain.depthFormat = grfx::FORMAT_D32_FLOAT;
     settings.grfx.enableDebug           = true;

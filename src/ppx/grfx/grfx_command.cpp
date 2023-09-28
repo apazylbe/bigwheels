@@ -61,6 +61,9 @@ void CommandBuffer::EndRenderPass()
 void CommandBuffer::BeginRendering(const grfx::RenderingInfo* pRenderingInfo)
 {
     PPX_ASSERT_NULL_ARG(pRenderingInfo);
+    PPX_ASSERT_MSG(mCurrentRenderPass == nullptr, "Cannot call BeginRendering in the middle of a renderpass");
+    // TODO: assert that it hasn't already called BeginRendering
+
     BeginRenderingImpl(pRenderingInfo);
 }
 

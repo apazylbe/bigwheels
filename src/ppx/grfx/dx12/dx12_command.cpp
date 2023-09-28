@@ -278,14 +278,17 @@ void CommandBuffer::BeginRenderingImpl(const grfx::RenderingInfo* pRenderingInfo
     clearValue.Color[3] = cv.a;
     clearValue.DepthStencil.Depth = 1.0f;
 
-    D3D12_RENDER_PASS_BEGINNING_ACCESS rtvBeginningAccess = {ToBeginningAccessType(pRenderingInfo->pRenderTargetViews[0]->GetLoadOp())};
-    D3D12_RENDER_PASS_ENDING_ACCESS    rtvEndingAccess    = {ToEndingAccessType(pRenderingInfo->pRenderTargetViews[0]->GetStoreOp())};
-    if (pRenderingInfo->pRenderTargetViews[0]->GetLoadOp() == grfx::ATTACHMENT_LOAD_OP_CLEAR) {
-        rtvBeginningAccess.Clear = {clearValue};
+    D3D12_RENDER_PASS_RENDER_TARGET_DESC renderTargetDescs[PPX_MAX_RENDER_TARGETS];
+    for (size_t i = 0; i < pRenderingInfo->renderTargetCount; i++) {
+        dx12::RenderTargetView*            pRTV                   = ToApi(pRenderingInfo->pRenderTargetViews[i]);
+        D3D12_CPU_DESCRIPTOR_HANDLE        rtvCPUDescriptorHandle = pRTV->GetCpuDescriptorHandle();
+        D3D12_RENDER_PASS_BEGINNING_ACCESS rtvBeginningAccess     = {ToBeginningAccessType(pRTV->GetLoadOp())};
+        D3D12_RENDER_PASS_ENDING_ACCESS    rtvEndingAccess        = {ToEndingAccessType(pRTV->GetStoreOp())};
+        if (pRenderingInfo->pRenderTargetViews[0]->GetLoadOp() == grfx::ATTACHMENT_LOAD_OP_CLEAR) {
+            rtvBeginningAccess.Clear = {clearValue};
+        }
+        renderTargetDescs[i] = {rtvCPUDescriptorHandle, rtvBeginningAccess, rtvEndingAccess};
     }
-
-    dx12::RenderTargetView* pRTV = ToApi(pRenderingInfo->pRenderTargetViews[0]);
-    D3D12_CPU_DESCRIPTOR_HANDLE rtvCPUDescriptorHandle = pRTV->GetCpuDescriptorHandle();
 
     D3D12_RENDER_PASS_DEPTH_STENCIL_DESC* pDSDesc = nullptr;
     D3D12_RENDER_PASS_DEPTH_STENCIL_DESC  renderDepthStencilDesc;
@@ -301,9 +304,15 @@ void CommandBuffer::BeginRenderingImpl(const grfx::RenderingInfo* pRenderingInfo
         renderDepthStencilDesc = {dsvCPUDescriptorHandle, depthBeginningAccess, stencilBeginningAccess, depthEndingAccess, stencilEndingAccess};
         pDSDesc                = &renderDepthStencilDesc;
     }
-
-    D3D12_RENDER_PASS_RENDER_TARGET_DESC renderTargetDesc{rtvCPUDescriptorHandle, rtvBeginningAccess, rtvEndingAccess};
-    mCommandList->BeginRenderPass(pRenderingInfo->renderTargetCount, &renderTargetDesc, pDSDesc, D3D12_RENDER_PASS_FLAG_NONE);
+    D3D12_RENDER_PASS_FLAGS flags = D3D12_RENDER_PASS_FLAG_NONE;
+    if (pRenderingInfo->flags.bits.suspending) {
+        flags |= D3D12_RENDER_PASS_FLAG_SUSPENDING_PASS;
+    }
+    if (pRenderingInfo->flags.bits.resuming) {
+        flags |= D3D12_RENDER_PASS_FLAG_RESUMING_PASS;
+    }
+    
+    mCommandList->BeginRenderPass(pRenderingInfo->renderTargetCount, renderTargetDescs, pDSDesc, D3D12_RENDER_PASS_FLAG_NONE);
 }
 
 void CommandBuffer::EndRenderingImpl()
