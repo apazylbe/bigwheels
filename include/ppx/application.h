@@ -267,6 +267,10 @@ struct ApplicationSettings
     std::string appName               = "";
     bool        headless              = false;
     bool        enableImGui           = false;
+    // Whether ImGui window is drawn within a dynamic render pass.
+    // Dynamic render pass must have begun with a single color
+    // attachment (no depth stencil attachment).
+    bool imGuiDynamicRendering = false;
     bool        allowThirdPartyAssets = false;
 
 #if defined(PPX_ANDROID)
@@ -292,12 +296,6 @@ struct ApplicationSettings
         std::string title     = "";
         bool        resizable = false;
     } window;
-
-    struct
-    {
-        bool dynamicRendering;
-        bool pushDescriptors;
-    } enabledFeatures;
 
     struct
     {

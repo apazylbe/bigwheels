@@ -144,7 +144,6 @@ void CommandBuffer::BeginRenderingImpl(const grfx::RenderingInfo* pRenderingInfo
         colorAttachment.storeOp                          = ToVkAttachmentStoreOp(rtv->GetStoreOp());
         colorAttachment.clearValue.color                 = ToVkClearColorValue(pRenderingInfo->RTVClearValues[0]);
         colorAttachmentDescs.push_back(colorAttachment);
-        std::cout << "Load op " << rtv->GetLoadOp() << std::endl;
     }
 
     VkRenderingInfo vkri      = {VK_STRUCTURE_TYPE_RENDERING_INFO};

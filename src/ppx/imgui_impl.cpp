@@ -271,7 +271,7 @@ Result ImGuiImplVk::InitApiObjects(ppx::Application* pApp)
         init_info.ImageCount                = pApp->GetUISwapchain()->GetImageCount();
         init_info.Allocator                 = VK_NULL_HANDLE;
         init_info.CheckVkResultFn           = nullptr;
-        init_info.UseDynamicRendering       = true;
+        init_info.UseDynamicRendering       = pApp->GetSettings()->imGuiDynamicRendering;
         init_info.ColorAttachmentFormat     = grfx::vk::ToVkFormat(pApp->GetUISwapchain()->GetColorFormat());
 
         grfx::RenderPassPtr renderPass = pApp->GetUISwapchain()->GetRenderPass(0, grfx::ATTACHMENT_LOAD_OP_LOAD);

@@ -29,8 +29,6 @@ void DynamicRenderingApp::Config(ApplicationSettings& settings)
     settings.grfx.api                   = kApi;
     settings.grfx.swapchain.depthFormat = grfx::FORMAT_D32_FLOAT;
     settings.grfx.enableDebug           = false;
-
-    settings.enabledFeatures.dynamicRendering = true;
 }
 
 void DynamicRenderingApp::Setup()
@@ -231,36 +229,8 @@ void DynamicRenderingApp::Render()
         renderingInfo.RTVClearValues[0] = {{0, 0, 0, 0}};
         renderingInfo.DSVClearValue     = {1.0f, 0xFF};
         renderingInfo.renderTargetCount = 1;
-
-#if 0
-        auto                             imagePtr      = swapchain->GetColorImage(imageIndex);
-        grfx::RenderTargetViewCreateInfo rtvCreateInfo = grfx::RenderTargetViewCreateInfo::GuessFromImage(imagePtr);
-        rtvCreateInfo.loadOp                           = ppx::grfx::ATTACHMENT_LOAD_OP_CLEAR;
-        rtvCreateInfo.ownership                        = grfx::OWNERSHIP_RESTRICTED;
-        grfx::RenderTargetViewPtr rtv;
-        Result                    ppxres = GetDevice()->CreateRenderTargetView(&rtvCreateInfo, &rtv);
-        if (Failed(ppxres)) {
-            PPX_ASSERT_MSG(false, "Failed");
-        }
-
-        auto                             depthImage    = swapchain->GetDepthImage(imageIndex);
-        grfx::DepthStencilViewCreateInfo dsvCreateInfo = grfx::DepthStencilViewCreateInfo::GuessFromImage(depthImage);
-        dsvCreateInfo.depthLoadOp                      = ppx::grfx::ATTACHMENT_LOAD_OP_CLEAR;
-        dsvCreateInfo.stencilLoadOp                    = ppx::grfx::ATTACHMENT_LOAD_OP_CLEAR;
-        dsvCreateInfo.ownership                        = ppx::grfx::OWNERSHIP_RESTRICTED;
-        grfx::DepthStencilViewPtr dsv;
-        ppxres = GetDevice()->CreateDepthStencilView(&dsvCreateInfo, &dsv);
-        if (Failed(ppxres)) {
-            PPX_ASSERT_MSG(false, "DSV create failed");
-        }
-
-        renderingInfo.pRenderTargetViews[0] = rtv;
-        renderingInfo.pDepthStencilView     = dsv;
-
-#else
         renderingInfo.pRenderTargetViews[0] = swapchain->GetClearRenderTargetView(0);
-        //renderingInfo.pDepthStencilView     = swapchain->GetDepthStencilView(0);
-#endif
+        renderingInfo.pDepthStencilView     = swapchain->GetDepthStencilView(0);
 
         frame.cmd->BeginRendering(&renderingInfo);
         {
@@ -270,7 +240,13 @@ void DynamicRenderingApp::Render()
             frame.cmd->BindGraphicsPipeline(mPipeline);
             frame.cmd->BindVertexBuffers(1, &mVertexBuffer, &mVertexBinding.GetStride());
             frame.cmd->Draw(36, 1, 0, 0);
+        }
+        frame.cmd->EndRendering();
 
+        renderingInfo.pRenderTargetViews[0] = swapchain->GetLoadRenderTargetView(0);
+        renderingInfo.pDepthStencilView = nullptr;
+        frame.cmd->BeginRendering(&renderingInfo);
+        {
             // Draw ImGui
             DrawDebugInfo();
             DrawImGui(frame.cmd);

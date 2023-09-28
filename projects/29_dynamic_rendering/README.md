@@ -1,11 +1,4 @@
-# Spinning cube
+# Dynamic Rendering
 
-Displays a spinning colored cube on screen. Builds upon the [Spinning Triangle](../02_triangle_spinning/README.md) project.
-
-Cube geometry data (vertices and vertex colors) is generated at setup time.
-
-## Shaders
-
-Shader              | Purpose for this project
-------------------- | --------------------------------------------------
-`VertexColors.hlsl` | Transform and draw a cube using vertex colors.
+Displays a spinning colored cube on screen. Demonstrates the use of dynamic render passes.
+This sample is still under development to demonstrate more use of dynamic render passes.
