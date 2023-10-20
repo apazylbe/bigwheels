@@ -223,6 +223,7 @@ endif()
 # ------------------------------------------------------------------------------
 if (PPX_BUILD_XR)
     message("Building OpenXR support")
+    set(BUILD_TESTS OFF CACHE BOOL)
     add_subdirectory(third_party/OpenXR-SDK-Source)
 endif()
 
