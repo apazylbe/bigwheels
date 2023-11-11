@@ -170,6 +170,10 @@ Result Device::ConfigureExtensions(const grfx::DeviceCreateInfo* pCreateInfo)
         mExtensions.push_back(VK_KHR_PUSH_DESCRIPTOR_EXTENSION_NAME);
     }
 
+    if (ElementExists(std::string(VK_KHR_MULTIVIEW_EXTENSION_NAME), mFoundExtensions)) {
+        mExtensions.push_back(VK_KHR_MULTIVIEW_EXTENSION_NAME);
+    }
+
     // Add additional extensions and uniquify
     AppendElements(pCreateInfo->vulkanExtensions, mExtensions);
     Unique(mExtensions);
@@ -329,6 +333,12 @@ Result Device::CreateApiObjects(const grfx::DeviceCreateInfo* pCreateInfo)
         queryResetFeatures.hostQueryReset = VK_TRUE;
 
         extensionStructs.push_back(reinterpret_cast<VkBaseOutStructure*>(&queryResetFeatures));
+    }
+
+    VkPhysicalDeviceMultiviewFeatures multiviewFeatures = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_FEATURES};
+    {
+        multiviewFeatures.multiview = VK_TRUE;
+        extensionStructs.push_back(reinterpret_cast<VkBaseOutStructure*>(&multiviewFeatures));
     }
 
     // Chain pNexts

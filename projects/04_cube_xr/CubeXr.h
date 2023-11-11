@@ -27,6 +27,7 @@ public:
     virtual void Setup() override;
     virtual void Render() override;
     void         RenderSingleCommandBuffer();
+    void         RenderMultiview();
     virtual void DispatchRender() override;
 
 private:

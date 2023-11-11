@@ -254,7 +254,7 @@ Result Swapchain::CreateApiObjects(const grfx::SwapchainCreateInfo* pCreateInfo)
         PPX_ASSERT_MSG(pCreateInfo->colorFormat == xrComponent.GetColorFormat(), "XR color format differs from requested swapchain format");
 
         XrSwapchainCreateInfo info = {XR_TYPE_SWAPCHAIN_CREATE_INFO};
-        info.arraySize             = 1;
+        info.arraySize             = 2;
         info.mipCount              = 1;
         info.faceCount             = 1;
         info.format                = ToVkFormat(pCreateInfo->colorFormat);
@@ -278,7 +278,7 @@ Result Swapchain::CreateApiObjects(const grfx::SwapchainCreateInfo* pCreateInfo)
             PPX_ASSERT_MSG(pCreateInfo->depthFormat == xrComponent.GetDepthFormat(), "XR depth format differs from requested swapchain format");
 
             XrSwapchainCreateInfo info = {XR_TYPE_SWAPCHAIN_CREATE_INFO};
-            info.arraySize             = 1;
+            info.arraySize             = 2;
             info.mipCount              = 1;
             info.faceCount             = 1;
             info.format                = ToVkFormat(pCreateInfo->depthFormat);
@@ -498,7 +498,7 @@ Result Swapchain::CreateApiObjects(const grfx::SwapchainCreateInfo* pCreateInfo)
             imageCreateInfo.format                          = pCreateInfo->colorFormat;
             imageCreateInfo.sampleCount                     = grfx::SAMPLE_COUNT_1;
             imageCreateInfo.mipLevelCount                   = 1;
-            imageCreateInfo.arrayLayerCount                 = 1;
+            imageCreateInfo.arrayLayerCount                 = 2;
             imageCreateInfo.usageFlags.bits.transferSrc     = true;
             imageCreateInfo.usageFlags.bits.transferDst     = true;
             imageCreateInfo.usageFlags.bits.sampled         = true;

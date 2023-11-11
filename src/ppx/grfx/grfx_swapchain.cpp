@@ -158,6 +158,7 @@ Result Swapchain::CreateDepthImages()
     if ((mCreateInfo.depthFormat != grfx::FORMAT_UNDEFINED) && mDepthImages.empty()) {
         for (uint32_t i = 0; i < mCreateInfo.imageCount; ++i) {
             grfx::ImageCreateInfo dpCreateInfo = ImageCreateInfo::DepthStencilTarget(mCreateInfo.width, mCreateInfo.height, mCreateInfo.depthFormat);
+            dpCreateInfo.arrayLayerCount       = 2;
             dpCreateInfo.ownership             = grfx::OWNERSHIP_RESTRICTED;
             dpCreateInfo.DSVClearValue         = {1.0f, 0xFF};
 
@@ -191,6 +192,7 @@ Result Swapchain::CreateRenderTargets()
     for (size_t i = 0; i < imageCount; ++i) {
         auto                             imagePtr      = mColorImages[i];
         grfx::RenderTargetViewCreateInfo rtvCreateInfo = grfx::RenderTargetViewCreateInfo::GuessFromImage(imagePtr);
+        rtvCreateInfo.arrayLayerCount                  = 2;
         rtvCreateInfo.loadOp                           = ppx::grfx::ATTACHMENT_LOAD_OP_CLEAR;
         rtvCreateInfo.ownership                        = grfx::OWNERSHIP_RESTRICTED;
 
@@ -216,6 +218,7 @@ Result Swapchain::CreateRenderTargets()
             dsvCreateInfo.depthLoadOp                      = ppx::grfx::ATTACHMENT_LOAD_OP_CLEAR;
             dsvCreateInfo.stencilLoadOp                    = ppx::grfx::ATTACHMENT_LOAD_OP_CLEAR;
             dsvCreateInfo.ownership                        = ppx::grfx::OWNERSHIP_RESTRICTED;
+            dsvCreateInfo.arrayLayerCount                  = 2;
 
             grfx::DepthStencilViewPtr dsv;
             ppxres = GetDevice()->CreateDepthStencilView(&dsvCreateInfo, &dsv);

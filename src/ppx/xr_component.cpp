@@ -90,11 +90,11 @@ void XrComponent::InitializeBeforeGrfxDeviceInit(const XrComponentCreateInfo& cr
 #endif // defined(PPX_ANDROID)
 
     for (const auto& extension : createInfo.requiredExtensions) {
-        xrInstanceExtensions.push_back(const_cast<char*>(extension.c_str()));
+        // xrInstanceExtensions.push_back(const_cast<char*>(extension.c_str()));
     }
 
     if (mCreateInfo.enableDebug) {
-        xrInstanceExtensions.push_back(XR_EXT_DEBUG_UTILS_EXTENSION_NAME);
+        // xrInstanceExtensions.push_back(XR_EXT_DEBUG_UTILS_EXTENSION_NAME);
     }
     // Verify required extensions are supported.
     uint32_t extCount = 0;
@@ -575,9 +575,10 @@ void XrComponent::ConditionallyPopulateProjectionLayer(const std::vector<grfx::S
         XrCompositionLayerProjectionView view = {XR_TYPE_COMPOSITION_LAYER_PROJECTION_VIEW};
         view.pose                             = mViews[i].pose;
         view.fov                              = mViews[i].fov;
-        view.subImage.swapchain               = swapchains[startIndex + i]->GetXrColorSwapchain();
+        view.subImage.swapchain               = swapchains[startIndex]->GetXrColorSwapchain();
         view.subImage.imageRect.offset        = {0, 0};
         view.subImage.imageRect.extent        = {static_cast<int>(GetWidth()), static_cast<int>(GetHeight())};
+        view.subImage.imageArrayIndex         = i;
 
         if (mShouldSubmitDepthInfo && (swapchains[startIndex + i]->GetXrDepthSwapchain() != XR_NULL_HANDLE)) {
             PPX_ASSERT_MSG(mNearPlaneForFrame.has_value() && mFarPlaneForFrame.has_value(), "Depth info layer cannot be submitted because near and far plane values are not set. "
@@ -587,9 +588,10 @@ void XrComponent::ConditionallyPopulateProjectionLayer(const std::vector<grfx::S
             depthInfo.maxDepth                       = 1.0f;
             depthInfo.nearZ                          = *mNearPlaneForFrame;
             depthInfo.farZ                           = *mFarPlaneForFrame;
-            depthInfo.subImage.swapchain             = swapchains[startIndex + i]->GetXrDepthSwapchain();
+            depthInfo.subImage.swapchain             = swapchains[startIndex]->GetXrDepthSwapchain();
             depthInfo.subImage.imageRect.offset      = {0, 0};
             depthInfo.subImage.imageRect.extent      = {static_cast<int>(GetWidth()), static_cast<int>(GetHeight())};
+            depthInfo.subImage.imageArrayIndex       = i;
 
             projectionLayer.AddView(view, depthInfo);
         }

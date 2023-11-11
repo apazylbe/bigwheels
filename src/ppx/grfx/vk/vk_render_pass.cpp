@@ -129,6 +129,17 @@ Result RenderPass::CreateRenderPass(const grfx::internal::RenderPassCreateInfo* 
     vkci.dependencyCount        = 1;
     vkci.pDependencies          = &subpassDependencies;
 
+    const uint32_t viewMask        = 0b00000011;
+    const uint32_t correlationMask = 0b00000011;
+
+    VkRenderPassMultiviewCreateInfo renderPassMultiviewCI{};
+    renderPassMultiviewCI.sType                = VK_STRUCTURE_TYPE_RENDER_PASS_MULTIVIEW_CREATE_INFO;
+    renderPassMultiviewCI.subpassCount         = 1;
+    renderPassMultiviewCI.pViewMasks           = &viewMask;
+    renderPassMultiviewCI.correlationMaskCount = 1;
+    renderPassMultiviewCI.pCorrelationMasks    = &correlationMask;
+    vkci.pNext                                 = &renderPassMultiviewCI;
+
     VkResult vkres = vk::CreateRenderPass(
         ToApi(GetDevice())->GetVkDevice(),
         &vkci,
@@ -295,6 +306,16 @@ VkResult CreateTransientRenderPass(
     vkci.pSubpasses             = &subpassDescription;
     vkci.dependencyCount        = 1;
     vkci.pDependencies          = &subpassDependencies;
+
+    const uint32_t                  viewMask        = 0b00000011;
+    const uint32_t                  correlationMask = 0b00000011;
+    VkRenderPassMultiviewCreateInfo renderPassMultiviewCI{};
+    renderPassMultiviewCI.sType                = VK_STRUCTURE_TYPE_RENDER_PASS_MULTIVIEW_CREATE_INFO;
+    renderPassMultiviewCI.subpassCount         = 1;
+    renderPassMultiviewCI.pViewMasks           = &viewMask;
+    renderPassMultiviewCI.correlationMaskCount = 1;
+    renderPassMultiviewCI.pCorrelationMasks    = &correlationMask;
+    vkci.pNext                                 = &renderPassMultiviewCI;
 
     VkResult vkres = vkCreateRenderPass(
         device,
