@@ -173,6 +173,7 @@ void Swapchain::DestroyColorImages()
     mColorImages.clear();
 }
 
+// TODO: this should be headless and surface swapchain only
 Result Swapchain::CreateDepthImages()
 {
     if ((mCreateInfo.depthFormat != grfx::FORMAT_UNDEFINED) && mDepthImages.empty()) {
