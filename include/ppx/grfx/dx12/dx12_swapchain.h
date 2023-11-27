@@ -48,12 +48,12 @@ private:
 
 // -------------------------------------------------------------------------------------------------
 
-class Swapchain
-    : public grfx::Swapchain
+class SurfaceSwapchain
+    : public grfx::SurfaceSwapchain
 {
 public:
-    Swapchain() {}
-    virtual ~Swapchain() {}
+    SurfaceSwapchain() {}
+    virtual ~SurfaceSwapchain() {}
 
     virtual Result Resize(uint32_t width, uint32_t height) override;
 
@@ -62,16 +62,53 @@ protected:
     virtual void   DestroyApiObjects() override;
 
 private:
-    virtual Result AcquireNextImageInternal(
+    virtual Result AcquireNextImageImpl(
         uint64_t         timeout,
         grfx::Semaphore* pSemaphore,
         grfx::Fence*     pFence,
         uint32_t*        pImageIndex) override;
 
-    virtual Result PresentInternal(
+    virtual Result PresentImpl(
         uint32_t                      imageIndex,
         uint32_t                      waitSemaphoreCount,
         const grfx::Semaphore* const* ppWaitSemaphores) override;
+
+    Result CreateColorImages(uint32_t width, uint32_t height, grfx::Format format, const std::vector<ID3D12Resource*>& colorImages);
+
+private:
+    DXGISwapChainPtr     mSwapchain;
+    HANDLE               mFrameLatencyWaitableObject = nullptr;
+    D3D12CommandQueuePtr mQueue;
+
+    //
+    // Store sync internval so we can control its behavior based
+    // on which present mode the client requested.
+    //
+    // See:
+    //   https://docs.microsoft.com/en-us/windows/win32/api/dxgi/nf-dxgi-idxgiswapchain-present
+    //
+    UINT mSyncInterval   = 1;
+    BOOL mTearingEnabled = FALSE;
+
+    // Cache these for resize event
+    UINT         mFlags       = 0;
+    grfx::Format mColorFormat = grfx::FORMAT_UNDEFINED;
+};
+
+class XRSwapchain
+    : public grfx::XRSwapchain
+{
+public:
+    XRSwapchain() {}
+    virtual ~XRSwapchain() {}
+
+    virtual Result Resize(uint32_t width, uint32_t height) override { return ppx::ERROR_FAILED; }
+
+protected:
+    virtual Result CreateApiObjects(const grfx::SwapchainCreateInfo* pCreateInfo) override;
+    virtual void   DestroyApiObjects() override;
+
+private:
 
     Result CreateColorImages(uint32_t width, uint32_t height, grfx::Format format, const std::vector<ID3D12Resource*>& colorImages);
 

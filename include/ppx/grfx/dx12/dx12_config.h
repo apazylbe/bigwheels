@@ -86,7 +86,8 @@ class Sampler;
 class Semaphore;
 class ShaderModule;
 class Surface;
-class Swapchain;
+class SurfaceSwapchain;
+class XRSwapchain;
 
 // -------------------------------------------------------------------------------------------------
 
@@ -257,11 +258,19 @@ struct ApiObjectLookUp<grfx::Surface>
 };
 
 template <>
-struct ApiObjectLookUp<grfx::Swapchain>
+struct ApiObjectLookUp<grfx::SurfaceSwapchain>
 {
-    using GrfxType = grfx::Swapchain;
-    using ApiType  = dx12::Swapchain;
+    using GrfxType = grfx::SurfaceSwapchain;
+    using ApiType  = dx12::SurfaceSwapchain;
 };
+
+template <>
+struct ApiObjectLookUp<grfx::XRSwapchain>
+{
+    using GrfxType = grfx::XRSwapchain;
+    using ApiType  = dx12::XRSwapchain;
+};
+
 template <typename GrfxTypeT>
 typename ApiObjectLookUp<GrfxTypeT>::ApiType* ToApi(GrfxTypeT* pGrfxObject)
 {

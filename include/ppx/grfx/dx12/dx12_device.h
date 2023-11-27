@@ -89,7 +89,8 @@ protected:
     virtual Result AllocateObject(grfx::ShaderModule** ppObject) override;
     virtual Result AllocateObject(grfx::ShaderProgram** ppObject) override;
     virtual Result AllocateObject(grfx::StorageImageView** ppObject) override;
-    virtual Result AllocateObject(grfx::Swapchain** ppObject) override;
+    virtual Result AllocateObject(grfx::SurfaceSwapchain** ppObject) override;
+    virtual Result AllocateObject(grfx::XRSwapchain** ppObject) override;
 
 protected:
     virtual Result CreateApiObjects(const grfx::DeviceCreateInfo* pCreateInfo) override;
