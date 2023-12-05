@@ -149,8 +149,11 @@ const char* Platform::GetPlatformString()
     return "Linux";
 #elif defined(PPX_MSW)
     return "Windows";
-#endif
+#elif defined(PPX_ANDROID)
+    return "Android";
+#else
     return "<unknown platform>";
+#endif
 }
 
 const CpuInfo& Platform::GetCpuInfo()
