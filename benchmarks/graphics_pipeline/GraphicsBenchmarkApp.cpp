@@ -231,9 +231,7 @@ void GraphicsBenchmarkApp::Setup()
     SetupSkyBoxPipelines();
 
     if (pEnableSpheres->GetValue()) {
-        SetupSphereResources();
-        SetupSphereMeshes();
-        SetupSpheresPipelines();
+        SetupSpheres();
     }
 
     // =====================================================================
@@ -305,6 +303,15 @@ void GraphicsBenchmarkApp::SetupMetrics()
         mMetricsData.metrics[MetricsData::kTypeBandwidth] = AddMetric(metadata);
         PPX_ASSERT_MSG(mMetricsData.metrics[MetricsData::kTypeBandwidth] != ppx::metrics::kInvalidMetricID, "Failed to add Bandwidth metric");
     }
+}
+
+void GraphicsBenchmarkApp::SetupSpheres()
+{
+    SetupSphereResources();
+    SetupSphereMeshes();
+    // Pipelines must be setup after meshes to use in vertex bindings.
+    SetupSpheresPipelines();
+    mSpheresAreSetUp = true;
 }
 
 void GraphicsBenchmarkApp::UpdateMetrics()
@@ -540,9 +547,6 @@ void GraphicsBenchmarkApp::SetupSphereMeshes()
     const uint32_t requiredSphereCount = std::max<uint32_t>(pSphereInstanceCount->GetValue(), kDefaultSphereInstanceCount);
     const uint32_t initSphereCount     = std::min<uint32_t>(kMaxSphereInstanceCount, 2 * std::max(requiredSphereCount, mInitializedSpheres));
 
-    OrderedGrid grid(initSphereCount, kSeed);
-    mInitializedSpheres = initSphereCount;
-
     GetDevice()->WaitIdle();
     // Destroy the meshes if they were created.
     for (auto& mesh : mSphereMeshes) {
@@ -553,6 +557,7 @@ void GraphicsBenchmarkApp::SetupSphereMeshes()
     }
 
     // Create the meshes
+    OrderedGrid grid(initSphereCount, kSeed);
     uint32_t meshIndex = 0;
     for (const auto& lod : kAvailableLODs) {
         PPX_LOG_INFO("LOD: " << lod.name);
@@ -564,8 +569,7 @@ void GraphicsBenchmarkApp::SetupSphereMeshes()
         PPX_CHECKED_CALL(grfx_util::CreateMeshFromGeometry(GetGraphicsQueue(), sphereMesh.GetHighPrecisionInterleaved(), &mSphereMeshes[meshIndex++]));
         PPX_CHECKED_CALL(grfx_util::CreateMeshFromGeometry(GetGraphicsQueue(), sphereMesh.GetHighPrecisionPositionPlanar(), &mSphereMeshes[meshIndex++]));
     }
-
-    mSpheresAreSetUp = true;
+    mInitializedSpheres = initSphereCount;
 }
 
 void GraphicsBenchmarkApp::SetupFullscreenQuadsMeshes()
@@ -884,12 +888,6 @@ void GraphicsBenchmarkApp::ProcessKnobs()
     const bool enableSpheres = pEnableSpheres->GetValue();
     // If the LOD is empty, assuming we skipped the setup for all sphere resources at start
     // So need to do the intial setup for all resources here
-    const bool spheresAreSetUp         = mSpheresAreSetUp;
-    const bool requireMoreSpheres      = sphereInstanceCountKnobChanged && (pSphereInstanceCount->GetValue() > mInitializedSpheres);
-    const bool updateSphereDescriptors = spheresAreSetUp && allTexturesTo1x1KnobChanged;
-    const bool setupSphereResources    = (!spheresAreSetUp) && enableSpheres;
-    const bool setupSphereMeshes       = ((!spheresAreSetUp) || requireMoreSpheres) && enableSpheres;
-    const bool rebuildSpherePipeline   = setupSphereMeshes || (spheresAreSetUp && (alphaBlendKnobChanged || depthTestWriteKnobChanged));
 
     // TODO: Ideally, the `maxValue` of the drawcall-count slider knob should be changed at runtime.
     // Currently, the value of the drawcall-count is adjusted to the sphere-count in case the
@@ -912,22 +910,28 @@ void GraphicsBenchmarkApp::ProcessKnobs()
     }
     pAllTexturesTo1x1->SetVisible(enableSpheres && (pKnobPs->GetValue() == SpherePS::SPHERE_PS_MEM_BOUND));
 
-    // Update sphere resources and mesh
-    if (setupSphereResources) {
-        SetupSphereResources();
-    }
-    if (setupSphereMeshes) {
-        SetupSphereMeshes();
-    }
+    if (enableSpheres) {
+        // Update sphere resources and mesh
+        const bool spheresAreSetUp = mSpheresAreSetUp;
+        if (!spheresAreSetUp) {
+            // This creates all resources.
+            SetupSpheres();
+        }
+        else {
+            const bool requireMoreSpheres = sphereInstanceCountKnobChanged && (pSphereInstanceCount->GetValue() > mInitializedSpheres);
+            if (requireMoreSpheres) {
+                SetupSphereMeshes();
+            }
+            // Rebuild pipelines
+            if (alphaBlendKnobChanged || depthTestWriteKnobChanged) {
+                SetupSpheresPipelines();
+            }
 
-    // Rebuild pipelines
-    if (rebuildSpherePipeline) {
-        SetupSpheresPipelines();
-    }
-
-    // Update descriptors
-    if (updateSphereDescriptors) {
-        UpdateSphereDescriptors();
+            // Update descriptors
+            if (allTexturesTo1x1KnobChanged) {
+                UpdateSphereDescriptors();
+            }
+        }
     }
 
     ProcessQuadsKnobs();

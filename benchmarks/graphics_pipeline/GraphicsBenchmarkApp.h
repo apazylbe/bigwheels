@@ -510,6 +510,7 @@ private:
     void SetupSkyBoxPipelines();
     void SetupSpheresPipelines();
     void SetupFullscreenQuadsPipelines();
+    void SetupSpheres();
 
     // Metrics related functions
     virtual void SetupMetrics() override;
