@@ -182,7 +182,6 @@ void GraphicsBenchmarkApp::Config(ppx::ApplicationSettings& settings)
     settings.window.width               = 1920;
     settings.window.height              = 1080;
     settings.grfx.api                   = kApi;
-    settings.grfx.enableDebug           = false;
     settings.grfx.numFramesInFlight     = 1;
     settings.grfx.swapchain.depthFormat = grfx::FORMAT_D32_FLOAT;
 #if defined(PPX_BUILD_XR)
@@ -694,7 +693,7 @@ Result GraphicsBenchmarkApp::CompilePipeline(const SpherePipelineKey& key)
         gpCreateInfo.vertexInputState.bindings[1]  = mSphereMeshes[meshIndex]->GetDerivedVertexBindings()[1];
     }
     gpCreateInfo.topology                           = grfx::PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-    gpCreateInfo.polygonMode                        = grfx::POLYGON_MODE_FILL;
+    gpCreateInfo.polygonMode                        = (key.enablePolygonModeLine ? grfx::POLYGON_MODE_LINE : grfx::POLYGON_MODE_FILL);
     gpCreateInfo.cullMode                           = grfx::CULL_MODE_BACK;
     gpCreateInfo.frontFace                          = grfx::FRONT_FACE_CCW;
     gpCreateInfo.depthReadEnable                    = key.enableDepth;
@@ -758,6 +757,7 @@ grfx::GraphicsPipelinePtr GraphicsBenchmarkApp::GetSpherePipeline()
     key.enableDepth           = pDepthTestWrite->GetValue();
     key.enableAlphaBlend      = pAlphaBlend->GetValue();
     key.renderFormat          = RenderFormat();
+    key.enablePolygonModeLine = (pDebugViews->GetValue() == DebugView::WIREFRAME_MODE);
     PPX_CHECKED_CALL(CompilePipeline(key));
     return mPipelines[key];
 }
@@ -766,7 +766,7 @@ grfx::GraphicsPipelinePtr GraphicsBenchmarkApp::GetFullscreenQuadPipeline()
 {
     QuadPipelineKey key = {};
     key.renderFormat    = RenderFormat();
-    key.quadType        = static_cast<FullscreenQuadsType>(pFullscreenQuadsType->GetIndex());
+    key.quadType        = pFullscreenQuadsType->GetValue();
     PPX_CHECKED_CALL(CompilePipeline(key));
     return mQuadsPipelines[key];
 }
@@ -974,7 +974,7 @@ void GraphicsBenchmarkApp::ProcessQuadsKnobs()
     if (pFullscreenQuadsCount->GetValue() > 0) {
         pFullscreenQuadsType->SetVisible(true);
         pFullscreenQuadsSingleRenderpass->SetVisible(true);
-        if (pFullscreenQuadsType->GetIndex() == static_cast<size_t>(FullscreenQuadsType::FULLSCREEN_QUADS_TYPE_SOLID_COLOR)) {
+        if (pFullscreenQuadsType->GetValue() == FullscreenQuadsType::FULLSCREEN_QUADS_TYPE_SOLID_COLOR) {
             pFullscreenQuadsColor->SetVisible(true);
         }
         else {
@@ -1524,7 +1524,7 @@ void GraphicsBenchmarkApp::RecordCommandBuffer(PerFrame& frame, const RenderPass
         frame.cmd->BindGraphicsPipeline(GetFullscreenQuadPipeline());
         frame.cmd->BindVertexBuffers(1, &mFullscreenQuads.vertexBuffer, &mFullscreenQuads.vertexBinding.GetStride());
 
-        if (pFullscreenQuadsType->GetIndex() == static_cast<size_t>(FullscreenQuadsType::FULLSCREEN_QUADS_TYPE_TEXTURE)) {
+        if (pFullscreenQuadsType->GetValue() == FullscreenQuadsType::FULLSCREEN_QUADS_TYPE_TEXTURE) {
             frame.cmd->BindGraphicsDescriptorSets(mQuadsPipelineInterfaces.at(pFullscreenQuadsType->GetIndex()), 1, &mFullscreenQuads.descriptorSets.at(GetInFlightFrameIndex()));
         }
 
@@ -1673,13 +1673,13 @@ void GraphicsBenchmarkApp::RecordCommandBufferSpheres(PerFrame& frame)
 
 void GraphicsBenchmarkApp::RecordCommandBufferFullscreenQuad(PerFrame& frame, size_t seed)
 {
-    switch (pFullscreenQuadsType->GetIndex()) {
-        case static_cast<size_t>(FullscreenQuadsType::FULLSCREEN_QUADS_TYPE_NOISE): {
+    switch (pFullscreenQuadsType->GetValue()) {
+        case FullscreenQuadsType::FULLSCREEN_QUADS_TYPE_NOISE: {
             uint32_t noiseQuadRandomSeed = (uint32_t)seed;
             frame.cmd->PushGraphicsConstants(mQuadsPipelineInterfaces[0], 1, &noiseQuadRandomSeed);
             break;
         }
-        case static_cast<size_t>(FullscreenQuadsType::FULLSCREEN_QUADS_TYPE_SOLID_COLOR): {
+        case FullscreenQuadsType::FULLSCREEN_QUADS_TYPE_SOLID_COLOR: {
             // zigzag the intensity between (0.5 ~ 1.0) in steps of 0.1
             //     index:   0,   1,   2,   3,   4,   5,   6,   7,   8,   9,   0...
             // intensity: 1.0, 0.9, 0.8, 0.7, 0.6, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0...

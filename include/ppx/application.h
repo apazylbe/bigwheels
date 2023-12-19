@@ -297,7 +297,16 @@ struct ApplicationSettings
     struct
     {
         grfx::Api api               = grfx::API_UNDEFINED;
-        bool      enableDebug       = false;
+
+#if !defined(NDEBUG) and !defined(PPX_ANDROID)
+        // Enable debug for debug builds, unless it is an android build.
+        // Validation on android requires additional setup, so it's not
+        // turned on by default.
+        bool enableDebug = true;
+#else
+        bool enableDebug = false;
+#endif
+
         uint32_t  numFramesInFlight = 1;
         uint32_t  pacedFrameRate    = 60;
 
@@ -343,12 +352,12 @@ struct ApplicationSettings
         bool headless = false;
 #endif
         bool                listGpus              = false;
-        std::string         metricsFilename       = std::filesystem::current_path().string();
+        std::string         metricsFilename       = "report_@.json";
         bool                overwriteMetricsFile  = false;
         std::pair<int, int> resolution            = std::make_pair(0, 0);
         uint32_t            runTimeMs             = 0;
         int                 screenshotFrameNumber = -1;
-        std::string         screenshotPath        = "";
+        std::string         screenshotPath        = "screenshot_frame_#.ppm";
         int                 statsFrameWindow      = -1;
         bool                useSoftwareRenderer   = false;
 #if defined(PPX_BUILD_XR)
