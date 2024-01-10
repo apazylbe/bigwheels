@@ -432,6 +432,8 @@ Result Device::CreateApiObjects(const grfx::DeviceCreateInfo* pCreateInfo)
     }
     PPX_LOG_INFO("Vulkan timeline semaphore is present: " << mHasTimelineSemaphore);
 
+    // TODO: fill in mHasMultiview
+
 #if defined(PPX_VK_EXTENDED_DYNAMIC_STATE)
     mExtendedDynamicStateAvailable = ElementExists(std::string(VK_EXT_EXTENDED_DYNAMIC_STATE_EXTENSION_NAME), mFoundExtensions));
 #endif // defined(PPX_VK_EXTENDED_DYNAMIC_STATE)

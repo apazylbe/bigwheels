@@ -53,6 +53,7 @@ VkResult CreateTransientRenderPass(
     const VkFormat*       pRenderTargetFormats,
     VkFormat              depthStencilFormat,
     VkSampleCountFlagBits sampleCount,
+    uint32_t arrayLayerCount,
     VkRenderPass*         pRenderPass);
 
 } // namespace vk

@@ -129,16 +129,19 @@ Result RenderPass::CreateRenderPass(const grfx::internal::RenderPassCreateInfo* 
     vkci.dependencyCount        = 1;
     vkci.pDependencies          = &subpassDependencies;
 
-    const uint32_t viewMask        = 0b00000011;
-    const uint32_t correlationMask = 0b00000011;
+    // TODO: this should come from the RenderPassCreateInfo
+    VkRenderPassMultiviewCreateInfo renderPassMultiviewCI{VK_STRUCTURE_TYPE_RENDER_PASS_MULTIVIEW_CREATE_INFO};
+    if (pCreateInfo->renderTargetCount > 0 && pCreateInfo->mRenderTargetViews[0].GetArrayLayerCount() > 1) {
+        uint32_t viewMask = (1 << pCreateInfo->mRenderTargetViews[0].GetArrayLayerCount()) - 1;
+        uint32_t correlationMask = viewMask;
 
-    VkRenderPassMultiviewCreateInfo renderPassMultiviewCI{};
-    renderPassMultiviewCI.sType                = VK_STRUCTURE_TYPE_RENDER_PASS_MULTIVIEW_CREATE_INFO;
-    renderPassMultiviewCI.subpassCount         = 1;
-    renderPassMultiviewCI.pViewMasks           = &viewMask;
-    renderPassMultiviewCI.correlationMaskCount = 1;
-    renderPassMultiviewCI.pCorrelationMasks    = &correlationMask;
-    vkci.pNext                                 = &renderPassMultiviewCI;
+        renderPassMultiviewCI.subpassCount         = 1;
+        renderPassMultiviewCI.pViewMasks           = &viewMask;
+        renderPassMultiviewCI.correlationMaskCount = 1;
+        renderPassMultiviewCI.pCorrelationMasks    = &correlationMask;
+        vkci.pNext                                 = &renderPassMultiviewCI;
+    }
+    
 
     VkResult vkres = vk::CreateRenderPass(
         ToApi(GetDevice())->GetVkDevice(),
@@ -233,6 +236,7 @@ VkResult CreateTransientRenderPass(
     const VkFormat*       pRenderTargetFormats,
     VkFormat              depthStencilFormat,
     VkSampleCountFlagBits sampleCount,
+    uint32_t arrayLayerCount,
     VkRenderPass*         pRenderPass)
 {
     bool hasDepthSencil = (depthStencilFormat != VK_FORMAT_UNDEFINED);
@@ -307,15 +311,18 @@ VkResult CreateTransientRenderPass(
     vkci.dependencyCount        = 1;
     vkci.pDependencies          = &subpassDependencies;
 
-    const uint32_t                  viewMask        = 0b00000011;
-    const uint32_t                  correlationMask = 0b00000011;
-    VkRenderPassMultiviewCreateInfo renderPassMultiviewCI{};
-    renderPassMultiviewCI.sType                = VK_STRUCTURE_TYPE_RENDER_PASS_MULTIVIEW_CREATE_INFO;
-    renderPassMultiviewCI.subpassCount         = 1;
-    renderPassMultiviewCI.pViewMasks           = &viewMask;
-    renderPassMultiviewCI.correlationMaskCount = 1;
-    renderPassMultiviewCI.pCorrelationMasks    = &correlationMask;
-    vkci.pNext                                 = &renderPassMultiviewCI;
+
+    VkRenderPassMultiviewCreateInfo renderPassMultiviewCI{VK_STRUCTURE_TYPE_RENDER_PASS_MULTIVIEW_CREATE_INFO};
+    if (arrayLayerCount > 0) {
+        uint32_t viewMask = (1 << pCreateInfo->mRenderTargetViews[0].GetArrayLayerCount()) - 1;
+        uint32_t correlationMask = viewMask;
+
+        renderPassMultiviewCI.subpassCount         = 1;
+        renderPassMultiviewCI.pViewMasks           = &viewMask;
+        renderPassMultiviewCI.correlationMaskCount = 1;
+        renderPassMultiviewCI.pCorrelationMasks    = &correlationMask;
+        vkci.pNext                                 = &renderPassMultiviewCI;
+    }
 
     VkResult vkres = vkCreateRenderPass(
         device,

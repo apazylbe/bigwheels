@@ -255,6 +255,7 @@ public:
     grfx::SampleCount       GetSampleCount() const { return mCreateInfo.sampleCount; }
     uint32_t                GetMipLevel() const { return mCreateInfo.mipLevel; }
     uint32_t                GetArrayLayer() const { return mCreateInfo.arrayLayer; }
+    uint32_t GetArrayLayerCount() const { return mCreateInfo.arrayLayerCount; }
     grfx::AttachmentLoadOp  GetLoadOp() const { return mCreateInfo.loadOp; }
     grfx::AttachmentStoreOp GetStoreOp() const { return mCreateInfo.storeOp; }
 };

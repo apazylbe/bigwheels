@@ -107,6 +107,7 @@ struct SwapchainCreateInfo
     grfx::PresentMode presentMode = grfx::PRESENT_MODE_IMMEDIATE;
 #if defined(PPX_BUILD_XR)
     XrComponent* pXrComponent = nullptr;
+    uint32_t arrayLayerCount = 1;
 #endif
 };
 
