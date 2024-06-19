@@ -249,6 +249,10 @@ Result Device::ConfigureFeatures(const grfx::DeviceCreateInfo* pCreateInfo, VkPh
     VkPhysicalDeviceFeatures foundFeatures = {};
     vkGetPhysicalDeviceFeatures(pGpu->GetVkGpu(), &foundFeatures);
 
+    PPX_ASSERT_MSG(foundFeatures.fillModeNonSolid, "Device does not support fillModeNonSolid required feature");
+    PPX_ASSERT_MSG(foundFeatures.fullDrawIndexUint32, "Device does not support fillModeNonSolid required feature");
+    PPX_ASSERT_MSG(foundFeatures.imageCubeArray, "Device does not support fillModeNonSolid required feature");
+
     // Default device features
     //
     // 2024/02/13 - Changed fillModeNonSolid to true to allow use of VK_POLYGON_MODE_LINE.
